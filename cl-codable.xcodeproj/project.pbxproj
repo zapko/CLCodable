@@ -10,6 +10,8 @@
 		C01641CF236FC91C00FFEBF2 /* cl_codable.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C01641C5236FC91B00FFEBF2 /* cl_codable.framework */; };
 		C01641D4236FC91C00FFEBF2 /* cl_codableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01641D3236FC91C00FFEBF2 /* cl_codableTests.swift */; };
 		C01641D6236FC91C00FFEBF2 /* cl_codable.h in Headers */ = {isa = PBXBuildFile; fileRef = C01641C8236FC91B00FFEBF2 /* cl_codable.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C01641E0236FC93A00FFEBF2 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01641DF236FC93A00FFEBF2 /* Parser.swift */; };
+		C01641E3236FC97500FFEBF2 /* Parser_spec.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01641E2236FC97500FFEBF2 /* Parser_spec.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +31,8 @@
 		C01641CE236FC91C00FFEBF2 /* cl-codableTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "cl-codableTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C01641D3236FC91C00FFEBF2 /* cl_codableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cl_codableTests.swift; sourceTree = "<group>"; };
 		C01641D5236FC91C00FFEBF2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C01641DF236FC93A00FFEBF2 /* Parser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
+		C01641E2236FC97500FFEBF2 /* Parser_spec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Parser_spec.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +75,8 @@
 		C01641C7236FC91B00FFEBF2 /* cl-codable */ = {
 			isa = PBXGroup;
 			children = (
+				C01641DF236FC93A00FFEBF2 /* Parser.swift */,
+				C01641E2236FC97500FFEBF2 /* Parser_spec.swift */,
 				C01641C8236FC91B00FFEBF2 /* cl_codable.h */,
 				C01641C9236FC91C00FFEBF2 /* Info.plist */,
 			);
@@ -148,6 +154,7 @@
 				TargetAttributes = {
 					C01641C4236FC91B00FFEBF2 = {
 						CreatedOnToolsVersion = 11.1;
+						LastSwiftMigration = 1110;
 					};
 					C01641CD236FC91C00FFEBF2 = {
 						CreatedOnToolsVersion = 11.1;
@@ -195,6 +202,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C01641E0236FC93A00FFEBF2 /* Parser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -203,6 +211,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C01641D4236FC91C00FFEBF2 /* cl_codableTests.swift in Sources */,
+				C01641E3236FC97500FFEBF2 /* Parser_spec.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,6 +349,7 @@
 		C01641DA236FC91C00FFEBF2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 8GURXFS484;
@@ -356,6 +366,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.zababako.cl-codable";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -364,6 +375,7 @@
 		C01641DB236FC91C00FFEBF2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 8GURXFS484;
@@ -388,6 +400,7 @@
 		C01641DD236FC91C00FFEBF2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8GURXFS484;
 				INFOPLIST_FILE = "cl-codableTests/Info.plist";
@@ -406,6 +419,7 @@
 		C01641DE236FC91C00FFEBF2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8GURXFS484;
 				INFOPLIST_FILE = "cl-codableTests/Info.plist";
