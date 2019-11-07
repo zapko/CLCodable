@@ -1,2 +1,2 @@
-# cl-codable
-Codable protocol for Lisp structures
+# CLCodable
+Codable protocol for Common Lisp structures

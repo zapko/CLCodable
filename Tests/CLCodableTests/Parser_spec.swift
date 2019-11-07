@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import cl_codable
+@testable import CLCodable
 
 class Parser_spec: XCTestCase {
 
