@@ -11,17 +11,15 @@ import XCTest
 
 class Parser_spec: XCTestCase {
 
+    struct Person {
+        let name: String
+        let age: Int
+    }
+
     func test_Simple_parsing() throws {
 
-        let data = "#S(person :age 30 :name \"Bob\")"
-
-        struct Person {
-            let name: String
-            let age: Int
-        }
-
-        let person = try parse(
-            data: data,
+        let person = try read(
+            clStruct: "#s(person :age 30 :name \"Bob\")",
             catalog: [
                 "person" : {
                     Person(name: $0["name"]!, age: Int($0["age"]!)!)
@@ -32,5 +30,45 @@ class Parser_spec: XCTestCase {
         XCTAssertNotNil(person)
         XCTAssertEqual(person?.name, "Bob")
         XCTAssertEqual(person?.age, 30)
+    }
+
+    func test_Parsing_screened_quotes() throws {
+
+        let person = try read(
+            clStruct: "#s(person :age 30 :name \"Bob \\\"Builder\\\"\")",
+            catalog: [
+                "person" : {
+                    Person(name: $0["name"]!, age: Int($0["age"]!)!)
+                }
+            ]
+        ) as? Person
+
+        XCTAssertNotNil(person)
+        XCTAssertEqual(person?.name, "Bob \"Builder\"")
+        XCTAssertEqual(person?.age, 30)
+    }
+
+    // TODO: test nested structures parsing
+    // TODO: test transformation from kebab to camel cases
+    // TODO: test upper cased format of CL structures
+    // TODO: test lists transformation into arrays
+}
+
+
+// TODO: move elsewhere
+class StringParsingTools_spec: XCTestCase {
+
+    func test_ClosingQuoteIndex() {
+
+        let string = "Brb \\\"  \""
+
+        XCTAssertNotNil(string.closingQuoteIndex())
+        XCTAssertEqual(string.closingQuoteIndex(), string.index(before: string.endIndex))
+    }
+
+    func test_UnscreenedLiteral() throws {
+
+        let literal = "Bob \\\"Builder\\\""
+        XCTAssertEqual(try literal.unscreenedLiteral(), "Bob \"Builder\"")
     }
 }

@@ -11,24 +11,31 @@ import Foundation
 
 enum ParsingError: Error {
     case invalidFormat(String)
+    case internalError(context: [String: Any])
+    case invalidLiteral(String)
 }
 
+let spaces = CharacterSet.whitespacesAndNewlines
+let structPrefix = "#s("
 
-func parse(data: String, catalog: [String : ([String : String]) -> Any]) throws -> Any {
+func read(clStruct: String, catalog: [String : ([String : String]) -> Any]) throws -> Any {
     
     var fieldValues: [String : String] = [:]
         
     var inside: [(struct: String, field: String?)] = []
     
-    var remaining = data.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-    
+    var remaining = clStruct.trimmingCharacters(in: spaces)
+
     var result: Any? = nil
-    
+
+    var previousLength = remaining.count
     while !remaining.isEmpty {
-     
-        if remaining.lowercased().hasPrefix("#s(") {
+
+        if remaining.prefix(structPrefix.count).lowercased() == structPrefix  {
             
-            remaining = String(remaining.suffix(from: remaining.index(remaining.startIndex, offsetBy: "#s(".count)))
+            remaining = String(remaining.suffix(
+                from: remaining.index(remaining.startIndex, offsetBy: structPrefix.count))
+            )
             
             guard let spaceIndex = remaining.firstIndex(of: " ") else {
                 
@@ -36,7 +43,7 @@ func parse(data: String, catalog: [String : ([String : String]) -> Any]) throws 
                     inside.append((String(remaining.prefix(upTo: parenthesisIndex)), nil))
                     
                     remaining = String(remaining.suffix(from: parenthesisIndex))
-                    remaining = remaining.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                    remaining = remaining.trimmingCharacters(in: spaces)
                     continue
                 }
                 
@@ -47,12 +54,14 @@ func parse(data: String, catalog: [String : ([String : String]) -> Any]) throws 
             inside.append((type, nil))
 
             remaining = String(remaining.suffix(from: spaceIndex))
-            remaining = remaining.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            remaining = remaining.trimmingCharacters(in: spaces)
         }
         
         if remaining.hasPrefix(":") {
             
-            guard let last = inside.last, last.field == nil else { throw ParsingError.invalidFormat("Field with no struct: \(remaining)")}
+            guard let last = inside.last, last.field == nil else {
+                throw ParsingError.invalidFormat("Field with no struct: \(remaining)")
+            }
             
             remaining = remaining.trimmingCharacters(in: CharacterSet.init(charactersIn: ":"))
             
@@ -64,7 +73,7 @@ func parse(data: String, catalog: [String : ([String : String]) -> Any]) throws 
             inside[inside.count - 1].field = fieldName
 
             remaining = String(remaining.suffix(from: spaceIndex))
-            remaining = remaining.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            remaining = remaining.trimmingCharacters(in: spaces)
         }
         
         if let currentField = inside.last?.field {
@@ -79,15 +88,15 @@ func parse(data: String, catalog: [String : ([String : String]) -> Any]) throws 
                 
                 remaining.remove(at: remaining.startIndex)
                 
-                guard let endOfLiteral = remaining.firstIndex(of: "\"") else {
+                guard let endOfLiteral = remaining.closingQuoteIndex() else {
                     throw ParsingError.invalidFormat("Non-ending literal")
                 }
                 
-                value = String(remaining.prefix(upTo: endOfLiteral))
+                value = try String(remaining.prefix(upTo: endOfLiteral)).unscreenedLiteral()
 
                 remaining = String(remaining.suffix(from: endOfLiteral))
                 remaining.remove(at: remaining.startIndex)
-                remaining = remaining.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                remaining = remaining.trimmingCharacters(in: spaces)
                 
             } else {
                 
@@ -97,7 +106,7 @@ func parse(data: String, catalog: [String : ([String : String]) -> Any]) throws 
                         value = String(remaining.prefix(upTo: parenthesisIndex))
                         
                         remaining = String(remaining.suffix(from: parenthesisIndex))
-                        remaining = remaining.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                        remaining = remaining.trimmingCharacters(in: spaces)
                         continue
                     }
                     
@@ -107,7 +116,7 @@ func parse(data: String, catalog: [String : ([String : String]) -> Any]) throws 
                 value = String(remaining.prefix(upTo: spaceIndex))
 
                 remaining = String(remaining.suffix(from: spaceIndex))
-                remaining = remaining.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                remaining = remaining.trimmingCharacters(in: spaces)
             }
         }
         
@@ -118,7 +127,8 @@ func parse(data: String, catalog: [String : ([String : String]) -> Any]) throws 
             }
             
             guard field == nil else {
-                throw ParsingError.invalidFormat("Field with no value: \(field!) in \(structType)")
+                let message = "Field with no value: \(field!) in \(structType)"
+                throw ParsingError.invalidFormat(message)
             }
             
             print("Field values: \(fieldValues)")
@@ -126,11 +136,19 @@ func parse(data: String, catalog: [String : ([String : String]) -> Any]) throws 
             fieldValues = [:]
             
             remaining.remove(at: remaining.startIndex)
-            remaining = remaining.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            remaining = remaining.trimmingCharacters(in: spaces)
         }
-        
+
         print(remaining)
-        // TODO: protect from infinite loop
+
+        if previousLength <= remaining.count {
+            throw ParsingError.internalError(context: [
+                "values"    : fieldValues,
+                "struct"    : inside,
+                "remaining" : remaining
+            ])
+        }
+        previousLength = remaining.count
     }
     
     guard let result2 = result else {
@@ -138,4 +156,58 @@ func parse(data: String, catalog: [String : ([String : String]) -> Any]) throws 
     }
     
     return result2
+}
+
+
+extension String {
+
+    func closingQuoteIndex() -> String.Index? {
+
+        var screened = false
+        return firstIndex {
+
+            switch ($0, screened) {
+            case ("\\", true):  screened = false
+            case ("\\", false): screened = true
+            case ("\"", true):  screened = false
+            case ("\"", false): return true
+            default:            screened = false
+            }
+
+            return false
+        }
+    }
+
+    func unscreenedLiteral() throws -> String {
+
+        typealias Aggregator = (chars: [Character], screenOn: Bool)
+
+        let aggregator = try self.reduce(into: Aggregator(chars: [], screenOn: false)) {
+            (aggregator, char) in
+
+            switch (char, aggregator.screenOn) {
+            case ("\\", true):
+                aggregator.chars.append(char)
+                aggregator.screenOn = false
+
+            case ("\\", false):
+                aggregator.screenOn = true
+
+            case ("\"", true):
+                aggregator.chars.append(char)
+                aggregator.screenOn = false
+
+            case ("\"", false):
+                throw ParsingError.invalidLiteral("Unscreened quote in: '\(self)'")
+
+            case (_, true):
+                throw ParsingError.invalidLiteral("Screened non-quote in: '\(self)'")
+
+            case (_, false):
+                aggregator.chars.append(char)
+            }
+        }
+
+        return String(aggregator.chars)
+    }
 }
