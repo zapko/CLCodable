@@ -1,0 +1,15 @@
+matrix:
+  include:
+    - os: osx
+      name: "macOS"
+      language: swift
+      sudo: required
+      install:
+        - bundle install # For codecoverage
+      script:
+        - swift package resolve
+        - swift package generate-xcodeproj
+        - fastlane scan --destination 'platform=OS X,arch=x86_64' --code_coverage
+        - xcov
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -J 'cl-codable'
