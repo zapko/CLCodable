@@ -13,24 +13,32 @@ enum ParsingError: Error {
     case invalidFormat(String)
     case internalError(context: [String: Any])
     case invalidLiteral(String)
+    case missingValue(field: String)
+    case unreadableValue(field: String, value: String, type: Any.Type)
 }
 
 let spaces = CharacterSet.whitespacesAndNewlines
 let structPrefix = "#s("
+let listPrefix = "'("
 
-func read(clStruct: String, catalog: [String : ([String : String]) -> Any]) throws -> Any {
+protocol InitiableWithStringsDictionary {
+    init(dictionary: [String: String]) throws
+}
+
+func read<T: InitiableWithStringsDictionary>(clView: String) throws -> T {
     
     var fieldValues: [String : String] = [:]
         
     var inside: [(struct: String, field: String?)] = []
     
-    var remaining = clStruct.trimmingCharacters(in: spaces)
+    var remaining = clView.trimmingCharacters(in: spaces)
 
-    var result: Any? = nil
+    var result: T? = nil
 
     var previousLength = remaining.count
     while !remaining.isEmpty {
 
+        // Starting struct context
         if remaining.prefix(structPrefix.count).lowercased() == structPrefix  {
             
             remaining = String(remaining.suffix(
@@ -56,7 +64,8 @@ func read(clStruct: String, catalog: [String : ([String : String]) -> Any]) thro
             remaining = String(remaining.suffix(from: spaceIndex))
             remaining = remaining.trimmingCharacters(in: spaces)
         }
-        
+
+        // Starting property name context
         if remaining.hasPrefix(":") {
             
             guard let last = inside.last, last.field == nil else {
@@ -75,7 +84,8 @@ func read(clStruct: String, catalog: [String : ([String : String]) -> Any]) thro
             remaining = String(remaining.suffix(from: spaceIndex))
             remaining = remaining.trimmingCharacters(in: spaces)
         }
-        
+
+        // Starting property value context
         if let currentField = inside.last?.field {
             
             var value: String?
@@ -119,7 +129,8 @@ func read(clStruct: String, catalog: [String : ([String : String]) -> Any]) thro
                 remaining = remaining.trimmingCharacters(in: spaces)
             }
         }
-        
+
+        // Closing struct context
         if remaining.hasPrefix(")") {
             
             guard let (structType, field) = inside.popLast() else {
@@ -132,7 +143,7 @@ func read(clStruct: String, catalog: [String : ([String : String]) -> Any]) thro
             }
             
             print("Field values: \(fieldValues)")
-            result = catalog[structType]!(fieldValues)
+            result = try T(dictionary: fieldValues)
             fieldValues = [:]
             
             remaining.remove(at: remaining.startIndex)
@@ -141,6 +152,7 @@ func read(clStruct: String, catalog: [String : ([String : String]) -> Any]) thro
 
         print(remaining)
 
+        // Protecting from infinite loops
         if previousLength <= remaining.count {
             throw ParsingError.internalError(context: [
                 "values"    : fieldValues,

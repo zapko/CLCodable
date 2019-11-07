@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		C01641CF236FC91C00FFEBF2 /* cl_codable.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C01641C5236FC91B00FFEBF2 /* cl_codable.framework */; };
-		C01641D4236FC91C00FFEBF2 /* cl_codableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01641D3236FC91C00FFEBF2 /* cl_codableTests.swift */; };
 		C01641D6236FC91C00FFEBF2 /* cl_codable.h in Headers */ = {isa = PBXBuildFile; fileRef = C01641C8236FC91B00FFEBF2 /* cl_codable.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C01641E0236FC93A00FFEBF2 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01641DF236FC93A00FFEBF2 /* Parser.swift */; };
 		C01641E3236FC97500FFEBF2 /* Parser_spec.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01641E2236FC97500FFEBF2 /* Parser_spec.swift */; };
@@ -29,7 +28,6 @@
 		C01641C8236FC91B00FFEBF2 /* cl_codable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cl_codable.h; sourceTree = "<group>"; };
 		C01641C9236FC91C00FFEBF2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C01641CE236FC91C00FFEBF2 /* cl-codableTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "cl-codableTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		C01641D3236FC91C00FFEBF2 /* cl_codableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cl_codableTests.swift; sourceTree = "<group>"; };
 		C01641D5236FC91C00FFEBF2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C01641DF236FC93A00FFEBF2 /* Parser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
 		C01641E2236FC97500FFEBF2 /* Parser_spec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Parser_spec.swift; sourceTree = "<group>"; };
@@ -86,7 +84,6 @@
 		C01641D2236FC91C00FFEBF2 /* cl-codableTests */ = {
 			isa = PBXGroup;
 			children = (
-				C01641D3236FC91C00FFEBF2 /* cl_codableTests.swift */,
 				C01641D5236FC91C00FFEBF2 /* Info.plist */,
 			);
 			path = "cl-codableTests";
@@ -210,7 +207,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C01641D4236FC91C00FFEBF2 /* cl_codableTests.swift in Sources */,
 				C01641E3236FC97500FFEBF2 /* Parser_spec.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
