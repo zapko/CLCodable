@@ -1,12 +1,32 @@
 import Foundation
 
 
-public enum ParsingError: Error {
+public enum ParsingError: Error, CustomNSError {
     case invalidFormat(String)
     case internalError(context: [String: Any])
     case invalidLiteral(String)
     case missingValue(field: String)
     case unreadableValue(field: String, value: String, type: Any.Type)
+    
+    public var errorUserInfo: [String : Any] {
+        return [NSLocalizedDescriptionKey : localizedDescription]
+    }
+
+    public var localizedDescription: String {
+        switch self {
+            
+        case .invalidFormat(let message):
+            return "invalid format " + message
+        case .internalError(let context):
+            return "internal error " + context.description
+        case .invalidLiteral(let literal):
+            return "invalid literal " + literal
+        case .missingValue(let field):
+            return "missing value " + field
+        case .unreadableValue(let field, let value, let type):
+            return ["unreadable value", field, value, "\(type)"].joined(separator: " ")
+        }
+    }
 }
 
 let spaces = CharacterSet.whitespacesAndNewlines
@@ -21,7 +41,7 @@ public func read<T: InitiableWithStringsDictionary>(clView: String) throws -> T 
     
     var fieldValues: [String : String] = [:]
         
-    var inside: [(struct: String, field: String?)] = []
+    var inside: (struct: String, field: String?)? = nil
     
     var remaining = clView.trimmingCharacters(in: spaces)
 
@@ -36,11 +56,11 @@ public func read<T: InitiableWithStringsDictionary>(clView: String) throws -> T 
             remaining = String(remaining.suffix(
                 from: remaining.index(remaining.startIndex, offsetBy: structPrefix.count))
             )
-            
-            guard let spaceIndex = remaining.firstIndex(of: " ") else {
+
+            guard let spaceIndex = remaining.rangeOfCharacter(from: spaces)?.lowerBound else {
                 
                 if let parenthesisIndex = remaining.firstIndex(of: ")") {
-                    inside.append((String(remaining.prefix(upTo: parenthesisIndex)), nil))
+                    inside = (String(remaining.prefix(upTo: parenthesisIndex)), nil)
                     
                     remaining = String(remaining.suffix(from: parenthesisIndex))
                     remaining = remaining.trimmingCharacters(in: spaces)
@@ -51,7 +71,7 @@ public func read<T: InitiableWithStringsDictionary>(clView: String) throws -> T 
             }
             
             let type = String(remaining.prefix(upTo: spaceIndex))
-            inside.append((type, nil))
+            inside = (type, nil)
 
             remaining = String(remaining.suffix(from: spaceIndex))
             remaining = remaining.trimmingCharacters(in: spaces)
@@ -60,30 +80,30 @@ public func read<T: InitiableWithStringsDictionary>(clView: String) throws -> T 
         // Starting property name context
         if remaining.hasPrefix(":") {
             
-            guard let last = inside.last, last.field == nil else {
+            guard let last = inside, last.field == nil else {
                 throw ParsingError.invalidFormat("Field with no struct: \(remaining)")
             }
             
             remaining = remaining.trimmingCharacters(in: CharacterSet.init(charactersIn: ":"))
             
-            guard let spaceIndex = remaining.firstIndex(of: " ") else {
+            guard let spaceIndex = remaining.rangeOfCharacter(from: spaces)?.lowerBound else {
                 throw ParsingError.invalidFormat("Missing field name end: \(remaining)")
             }
             
             let fieldName = String(remaining.prefix(upTo: spaceIndex))
-            inside[inside.count - 1].field = fieldName
+            inside!.field = fieldName
 
             remaining = String(remaining.suffix(from: spaceIndex))
             remaining = remaining.trimmingCharacters(in: spaces)
         }
 
         // Starting property value context
-        if let currentField = inside.last?.field {
+        if let currentField = inside?.field {
             
             var value: String?
             defer {
                 fieldValues[currentField] = value
-                inside[inside.count - 1].field = nil
+                inside!.field = nil
             }
             
             if remaining.hasPrefix("\"") {
@@ -100,9 +120,20 @@ public func read<T: InitiableWithStringsDictionary>(clView: String) throws -> T 
                 remaining.remove(at: remaining.startIndex)
                 remaining = remaining.trimmingCharacters(in: spaces)
                 
+            } else if remaining.hasPrefix(structPrefix) {
+                
+                guard let endOfStruct = remaining.closingParanthesisIndex() else {
+                    throw ParsingError.invalidFormat("Non-ending nested struct")
+                }
+                
+                value = String(remaining.prefix(through: endOfStruct))
+
+                remaining = String(remaining.suffix(from: remaining.index(after: endOfStruct)))
+                remaining = remaining.trimmingCharacters(in: spaces)
+
             } else {
                 
-                guard let spaceIndex = remaining.firstIndex(of: " ") else {
+                guard let spaceIndex = remaining.rangeOfCharacter(from: spaces)?.lowerBound else {
                     
                     if let parenthesisIndex = remaining.firstIndex(of: ")") {
                         value = String(remaining.prefix(upTo: parenthesisIndex))
@@ -125,7 +156,7 @@ public func read<T: InitiableWithStringsDictionary>(clView: String) throws -> T 
         // Closing struct context
         if remaining.hasPrefix(")") {
             
-            guard let (structType, field) = inside.popLast() else {
+            guard let (structType, field) = inside else {
                 throw ParsingError.invalidFormat("Ending struct with no start")
             }
             
@@ -148,7 +179,7 @@ public func read<T: InitiableWithStringsDictionary>(clView: String) throws -> T 
         if previousLength <= remaining.count {
             throw ParsingError.internalError(context: [
                 "values"    : fieldValues,
-                "struct"    : inside,
+                "struct"    : String(describing: inside),
                 "remaining" : remaining
             ])
         }
@@ -178,6 +209,22 @@ extension String {
             default:            screened = false
             }
 
+            return false
+        }
+    }
+    
+    func closingParanthesisIndex() -> String.Index? {
+        
+        var counter = 0
+        return firstIndex {
+            
+            switch $0 {
+            case "(": counter += 1
+            case ")": counter -= 1
+                      if counter == 0 { return true }
+            default: break
+            }
+            
             return false
         }
     }
