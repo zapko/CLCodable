@@ -9,7 +9,7 @@
 import XCTest
 @testable import CLCodable
 
-class Parser_spec: XCTestCase {
+class Read_spec: XCTestCase {
 
     struct Person: InitiableWithStringsDictionary {
         let name: String
@@ -61,6 +61,11 @@ class Parser_spec: XCTestCase {
     // TODO: test upper cased format of CL structures
     // TODO: test lists transformation into arrays
     // TODO: add performance tests
+    
+    static var allTests = [
+        ("test_Simple_parsing", test_Simple_parsing),
+        ("test_Parsing_screened_quotes", test_Parsing_screened_quotes)
+    ]
 }
 
 
@@ -80,4 +85,10 @@ class StringParsingTools_spec: XCTestCase {
         let literal = "Bob \\\"the Builder\\\""
         XCTAssertEqual(try literal.unscreenedLiteral(), "Bob \"the Builder\"")
     }
+    
+    static var allTests = [
+        ("test_ClosingQuoteIndex", test_ClosingQuoteIndex),
+        ("test_UnscreenedLiteral", test_UnscreenedLiteral)
+    ]
+
 }

@@ -1,15 +1,7 @@
-//
-//  Parser.swift
-//  cl-codable
-//
-//  Created by Zapko on 2019-11-03.
-//  Copyright © 2019 Zababako. All rights reserved.
-//
-
 import Foundation
 
 
-enum ParsingError: Error {
+public enum ParsingError: Error {
     case invalidFormat(String)
     case internalError(context: [String: Any])
     case invalidLiteral(String)
@@ -21,11 +13,11 @@ let spaces = CharacterSet.whitespacesAndNewlines
 let structPrefix = "#s("
 let listPrefix = "'("
 
-protocol InitiableWithStringsDictionary {
+public protocol InitiableWithStringsDictionary {
     init(dictionary: [String: String]) throws
 }
 
-func read<T: InitiableWithStringsDictionary>(clView: String) throws -> T {
+public func read<T: InitiableWithStringsDictionary>(clView: String) throws -> T {
     
     var fieldValues: [String : String] = [:]
         
