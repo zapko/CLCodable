@@ -21,13 +21,13 @@ class Read_spec: XCTestCase {
         init(from slots: [String : CLToken]) throws {
 
             guard let name = try slots["name"]?.string() else {
-                throw CLReadError.missingValue(field: "name")
+                throw CLReadError.missingValue(.init("name"))
             }
 
             self.name = name
 
             guard let age = try slots["age"]?.int() else {
-                throw CLReadError.missingValue(field: "age")
+                throw CLReadError.missingValue(.init("age"))
             }
 
             self.age = age
@@ -41,13 +41,13 @@ class Read_spec: XCTestCase {
         init(from slots: [String : CLToken]) throws {
 
             guard let one: Person = try slots["one"]?.clStruct() else {
-                throw CLReadError.missingValue(field: "one")
+                throw CLReadError.missingValue(.init("one"))
             }
 
             self.one = one
 
             guard let two: Person = try slots["two"]?.clStruct() else {
-                throw CLReadError.missingValue(field: "two")
+                throw CLReadError.missingValue(.init("two"))
             }
 
             self.two = two

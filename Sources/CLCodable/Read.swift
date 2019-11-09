@@ -17,6 +17,7 @@ public enum CLReadError: Error, CustomNSError {
     case emptyView
     case wrongRoot(CLToken, Context)
     case typeMismatch(Context)
+    case missingValue(Context)
 
     public var errorUserInfo: [String : Any] {
         return [NSLocalizedDescriptionKey : localizedDescription]
@@ -26,16 +27,19 @@ public enum CLReadError: Error, CustomNSError {
         switch self {
 
         case .emptyView:
-            return "Empty view"
+            return "CLReadError.emptyView"
 
         case .wrongRoot(let token):
-            return "Wrong root: \(token)"
+            return "CLReadError.wrongRoot: \(token)"
 
         case .typeMismatch(let context):
-            return "Type mismatch: \(context.message)"
+            return "CLReadError.typeMismatch: \(context.message)"
 
         case .dataCorrupted(let context):
-            return "invalid format " + context.message
+            return "CLReadError.dataCorrupted: \(context.message)"
+            
+        case .missingValue(let context):
+            return "CLReadError.missingValue: \(context.message)"
         }
     }
 }
@@ -277,6 +281,7 @@ public protocol CLEncodable {
 }
 
 public typealias CLCodable = CLEncodable & CLDecodable
+
 
 public func readStruct<T: CLDecodable>(clView: String) throws -> T {
 
