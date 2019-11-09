@@ -1,264 +1,303 @@
 import Foundation
 
 
-public enum ParsingError: Error, CustomNSError {
-    case invalidFormat(String)
-    case internalError(context: [String: Any])
-    case invalidLiteral(String)
-    case missingValue(field: String)
-    case unreadableValue(field: String, value: String, type: Any.Type)
-    
+public enum CLPrintError: Error {}
+
+public enum CLReadError: Error, CustomNSError {
+
+    public struct Context {
+        let message: String
+
+        public init(_ message: String) {
+            self.message = message
+        }
+    }
+
+    case dataCorrupted(Context)
+    case emptyView
+    case wrongRoot(CLToken, Context)
+    case typeMismatch(Context)
+
     public var errorUserInfo: [String : Any] {
         return [NSLocalizedDescriptionKey : localizedDescription]
     }
 
     public var localizedDescription: String {
         switch self {
-            
-        case .invalidFormat(let message):
-            return "invalid format " + message
-        case .internalError(let context):
-            return "internal error " + context.description
-        case .invalidLiteral(let literal):
-            return "invalid literal " + literal
-        case .missingValue(let field):
-            return "missing value " + field
-        case .unreadableValue(let field, let value, let type):
-            return ["unreadable value", field, value, "\(type)"].joined(separator: " ")
+
+        case .emptyView:
+            return "Empty view"
+
+        case .wrongRoot(let token):
+            return "Wrong root: \(token)"
+
+        case .typeMismatch(let context):
+            return "Type mismatch: \(context.message)"
+
+        case .dataCorrupted(let context):
+            return "invalid format " + context.message
         }
     }
 }
 
-let spaces = CharacterSet.whitespacesAndNewlines
-let structPrefix = "#s("
-let listPrefix = "'("
+public indirect enum CLToken: Equatable {
+    case cons(CLToken, CLToken)
+    case number(String)
+    case literal(String)
+    case structure(name: String, slots: [String : CLToken])
 
-public protocol InitiableWithStringsDictionary {
-    init(dictionary: [String: String]) throws
+    func string() throws -> String {
+        switch self {
+        case .literal(let string):
+            return string
+
+        default:
+            let message = "Looking for literal, in '\(self)'"
+            throw CLReadError.typeMismatch(.init(message))
+        }
+    }
+
+    func int() throws -> Int {
+        switch self {
+        case .number(let raw):
+
+            if let int = Int(raw) { return int }
+
+            let message = "Malformed integer: '\(raw)'"
+            throw CLReadError.dataCorrupted(.init(message))
+
+        default:
+            let message = "Looking for literal, in '\(self)'"
+            throw CLReadError.typeMismatch(.init(message))
+        }
+    }
+
+    func clStruct<T: CLDecodable>() throws -> T {
+
+        switch self {
+        case let .structure(name, slots):
+
+            guard name.uppercased() == "\(T.self)".uppercased() else {
+                let message = "Expecting '\(T.self)' read '\(name)'"
+                throw CLReadError.typeMismatch(.init(message))
+            }
+
+            return try T(from: slots)
+
+        default:
+            let message = "Looking for literal, in '\(self)'"
+            throw CLReadError.typeMismatch(.init(message))
+        }
+    }
 }
 
-public func read<T: InitiableWithStringsDictionary>(clView: String) throws -> T {
+
+struct Tokenizer {
+
+
+    // MARK: - Private state
+
+    private var iterator: String.UnicodeScalarView.Iterator
+    private var cachedScalar: UnicodeScalar?
+
+
+    // MARK: - Initializer
     
-    var fieldValues: [String : String] = [:]
+    init(clView: String) {
+        iterator = clView.unicodeScalars.makeIterator()
+    }
+
+    mutating func nextToken() throws -> CLToken? {
+
+        while let char = nextScalar() {
+
+            switch char {
+            case " ", "\n", "\t", "\r":
+                continue
+
+            case "#":
+
+                switch nextScalar() {
+                case "s", "S":
+                    return try structToken()
+                default:
+                    let message = "Found '\(char)' after '#' on root level"
+                    throw CLReadError.dataCorrupted(.init(message))
+                }
+
+            case "\"":
+                return try literalToken()
+
+            case "0"..."9", ",", ".", "_":
+                return try numberToken(startingWith: char)
+
+            default:
+                let message = "Found '\(char)' on root level"
+                throw CLReadError.dataCorrupted(.init(message))
+            }
+        }
+
+        return nil
+    }
+
+
+    // MARK: - Private Methods
+
+    private mutating func nextScalar() -> UnicodeScalar? {
+        guard let cached = cachedScalar else {
+            return iterator.next()
+        }
+
+        cachedScalar = nil
+        return cached
+    }
+
+    mutating func structToken() throws -> CLToken {
+
+        guard let firstSymbol = nextScalar(), firstSymbol == "(" else {
+            let message = "Malformed struct"
+            throw CLReadError.dataCorrupted(.init(message))
+        }
+
+        var nameDefined = false
+        var structName = ""
+        var slots: [String : CLToken] = [:]
         
-    var inside: (struct: String, field: String?)? = nil
-    
-    var remaining = clView.trimmingCharacters(in: spaces)
+        while let char = nextScalar() {
+            switch (char, nameDefined) {
+            case ( " ", false), 
+                 ("\n", false),
+                 ("\t", false),
+                 ("\r", false):
+                nameDefined = true
 
-    var result: T? = nil
-
-    var previousLength = remaining.count
-    while !remaining.isEmpty {
-
-        // Starting struct context
-        if remaining.prefix(structPrefix.count).lowercased() == structPrefix  {
-            
-            remaining = String(remaining.suffix(
-                from: remaining.index(remaining.startIndex, offsetBy: structPrefix.count))
-            )
-
-            guard let spaceIndex = remaining.rangeOfCharacter(from: spaces)?.lowerBound else {
-                
-                if let parenthesisIndex = remaining.firstIndex(of: ")") {
-                    inside = (String(remaining.prefix(upTo: parenthesisIndex)), nil)
-                    
-                    remaining = String(remaining.suffix(from: parenthesisIndex))
-                    remaining = remaining.trimmingCharacters(in: spaces)
-                    continue
-                }
-                
-                throw ParsingError.invalidFormat("Missing structure end: \(remaining)")
-            }
-            
-            let type = String(remaining.prefix(upTo: spaceIndex))
-            inside = (type, nil)
-
-            remaining = String(remaining.suffix(from: spaceIndex))
-            remaining = remaining.trimmingCharacters(in: spaces)
-        }
-
-        // Starting property name context
-        if remaining.hasPrefix(":") {
-            
-            guard let last = inside, last.field == nil else {
-                throw ParsingError.invalidFormat("Field with no struct: \(remaining)")
-            }
-            
-            remaining = remaining.trimmingCharacters(in: CharacterSet.init(charactersIn: ":"))
-            
-            guard let spaceIndex = remaining.rangeOfCharacter(from: spaces)?.lowerBound else {
-                throw ParsingError.invalidFormat("Missing field name end: \(remaining)")
-            }
-            
-            let fieldName = String(remaining.prefix(upTo: spaceIndex))
-            inside!.field = fieldName
-
-            remaining = String(remaining.suffix(from: spaceIndex))
-            remaining = remaining.trimmingCharacters(in: spaces)
-        }
-
-        // Starting property value context
-        if let currentField = inside?.field {
-            
-            var value: String?
-            defer {
-                fieldValues[currentField] = value
-                inside!.field = nil
-            }
-            
-            if remaining.hasPrefix("\"") {
-                
-                remaining.remove(at: remaining.startIndex)
-                
-                guard let endOfLiteral = remaining.closingQuoteIndex() else {
-                    throw ParsingError.invalidFormat("Non-ending literal")
-                }
-                
-                value = try String(remaining.prefix(upTo: endOfLiteral)).unscreenedLiteral()
-
-                remaining = String(remaining.suffix(from: endOfLiteral))
-                remaining.remove(at: remaining.startIndex)
-                remaining = remaining.trimmingCharacters(in: spaces)
-                
-            } else if remaining.hasPrefix(structPrefix) {
-                
-                guard let endOfStruct = remaining.closingParanthesisIndex() else {
-                    throw ParsingError.invalidFormat("Non-ending nested struct")
-                }
-                
-                value = String(remaining.prefix(through: endOfStruct))
-
-                remaining = String(remaining.suffix(from: remaining.index(after: endOfStruct)))
-                remaining = remaining.trimmingCharacters(in: spaces)
-
-            } else {
-                
-                guard let spaceIndex = remaining.rangeOfCharacter(from: spaces)?.lowerBound else {
-                    
-                    if let parenthesisIndex = remaining.firstIndex(of: ")") {
-                        value = String(remaining.prefix(upTo: parenthesisIndex))
-                        
-                        remaining = String(remaining.suffix(from: parenthesisIndex))
-                        remaining = remaining.trimmingCharacters(in: spaces)
-                        continue
-                    }
-                    
-                    throw ParsingError.invalidFormat("Missing field value end: \(remaining)")
-                }
-
-                value = String(remaining.prefix(upTo: spaceIndex))
-
-                remaining = String(remaining.suffix(from: spaceIndex))
-                remaining = remaining.trimmingCharacters(in: spaces)
-            }
-        }
-
-        // Closing struct context
-        if remaining.hasPrefix(")") {
-            
-            guard let (structType, field) = inside else {
-                throw ParsingError.invalidFormat("Ending struct with no start")
-            }
-            
-            guard field == nil else {
-                let message = "Field with no value: \(field!) in \(structType)"
-                throw ParsingError.invalidFormat(message)
-            }
-            
-            print("Field values: \(fieldValues)")
-            result = try T(dictionary: fieldValues)
-            fieldValues = [:]
-            
-            remaining.remove(at: remaining.startIndex)
-            remaining = remaining.trimmingCharacters(in: spaces)
-        }
-
-        print(remaining)
-
-        // Protecting from infinite loops
-        if previousLength <= remaining.count {
-            throw ParsingError.internalError(context: [
-                "values"    : fieldValues,
-                "struct"    : String(describing: inside),
-                "remaining" : remaining
-            ])
-        }
-        previousLength = remaining.count
-    }
-    
-    guard let result2 = result else {
-        throw ParsingError.invalidFormat("There is no object")
-    }
-    
-    return result2
-}
-
-
-extension String {
-
-    func closingQuoteIndex() -> String.Index? {
-
-        var screened = false
-        return firstIndex {
-
-            switch ($0, screened) {
-            case ("\\", true):  screened = false
-            case ("\\", false): screened = true
-            case ("\"", true):  screened = false
-            case ("\"", false): return true
-            default:            screened = false
-            }
-
-            return false
-        }
-    }
-    
-    func closingParanthesisIndex() -> String.Index? {
-        
-        var counter = 0
-        return firstIndex {
-            
-            switch $0 {
-            case "(": counter += 1
-            case ")": counter -= 1
-                      if counter == 0 { return true }
-            default: break
-            }
-            
-            return false
-        }
-    }
-
-    func unscreenedLiteral() throws -> String {
-
-        typealias Aggregator = (chars: [Character], screenOn: Bool)
-
-        let aggregator = try self.reduce(into: Aggregator(chars: [], screenOn: false)) {
-            (aggregator, char) in
-
-            switch (char, aggregator.screenOn) {
-            case ("\\", true):
-                aggregator.chars.append(char)
-                aggregator.screenOn = false
-
-            case ("\\", false):
-                aggregator.screenOn = true
-
-            case ("\"", true):
-                aggregator.chars.append(char)
-                aggregator.screenOn = false
-
-            case ("\"", false):
-                throw ParsingError.invalidLiteral("Unscreened quote in: '\(self)'")
-
-            case (_, true):
-                throw ParsingError.invalidLiteral("Screened non-quote in: '\(self)'")
+            case ( " ", true),
+                 ("\n", true),
+                 ("\t", true),
+                 ("\r", true):
+                continue
 
             case (_, false):
-                aggregator.chars.append(char)
+                structName.unicodeScalars.append(char)
+
+            case (":", true):
+                let fieldName = try readFieldName()
+
+                guard slots[fieldName] == nil else {
+                    let message = "Multiple values for field '\(fieldName)'"
+                    throw CLReadError.dataCorrupted(.init(message))
+                }
+
+                slots[fieldName] = try nextToken()
+
+            case (")", true):
+                return .structure(name: structName, slots: slots)
+
+            case (_, true):
+                let message = "Malformed struct. Name '\(structName)'. Slots '\(slots)'. Received '\(char)'"
+                throw CLReadError.dataCorrupted(.init(message))
             }
         }
 
-        return String(aggregator.chars)
+        let message = "Non-terminated structure"
+        throw CLReadError.dataCorrupted(.init(message))
+    }
+
+    mutating func readFieldName() throws -> String {
+
+        var fieldName = ""
+
+        while let char = nextScalar() {
+            switch char {
+            case " ": return fieldName
+            default: fieldName.unicodeScalars.append(char)
+            }
+        }
+
+        return fieldName
+    }
+
+    mutating func literalToken() throws -> CLToken {
+
+        var escaped = false
+        var literal = ""
+
+        while let char = nextScalar() {
+            switch (char, escaped) {
+            case (_, true):
+                literal.unicodeScalars.append(char)
+                escaped = false
+
+            case ("\\", false):
+                escaped = true
+
+            case ("\"", false):
+                return .literal(literal)
+
+            case (_, false):
+                literal.unicodeScalars.append(char)
+            }
+        }
+
+        let message = "Non-terminated string literal"
+        throw CLReadError.dataCorrupted(.init(message))
+    }
+
+    mutating func numberToken(startingWith first: UnicodeScalar) throws -> CLToken {
+
+        var token = String(first)
+
+        while let char = nextScalar() {
+
+            switch char {
+            case "0"..."9", ",", ".", "_":
+                token.unicodeScalars.append(char)
+
+            case " ", "\t", "\n", "\r", ")":
+                cachedScalar = char
+                return .number(token)
+
+            default:
+                let message = "Malformed number. Contains: '\(char)'"
+                throw CLReadError.dataCorrupted(.init(message))
+            }
+        }
+
+        let message = "Non-terminated number '\(token)'"
+        throw CLReadError.dataCorrupted(.init(message))
+    }
+}
+
+public protocol CLDecodable {
+    init(from slots: [String : CLToken]) throws
+}
+
+public protocol CLEncodable {
+    func encode() throws -> CLToken
+}
+
+public typealias CLCodable = CLEncodable & CLDecodable
+
+public func readStruct<T: CLDecodable>(clView: String) throws -> T {
+
+    var tokenizer = Tokenizer(clView: clView)
+
+    guard let token = try tokenizer.nextToken() else {
+        throw CLReadError.emptyView
+    }
+
+    switch token {
+    case let .structure(name, slots):
+
+        guard "\(T.self)".uppercased() == name.uppercased() else {
+            let message = "Expected root: '\(T.self)'"
+            throw CLReadError.wrongRoot(token, .init(message))
+        }
+
+        return try T(from: slots)
+
+    default:
+        let message = "Expected root: '\(T.self)'"
+        throw CLReadError.wrongRoot(token, .init(message))
     }
 }

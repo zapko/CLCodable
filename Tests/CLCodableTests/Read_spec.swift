@@ -14,57 +14,67 @@ class Read_spec: XCTestCase {
     
     // MARK: - Structures definition
     
-    struct Person: InitiableWithStringsDictionary {
+    struct Person: CLDecodable {
         let name: String
         let age:  Int
 
-        // TODO: code-generate this kind of initializers
-        init(dictionary: [String : String]) throws {
+        init(from slots: [String : CLToken]) throws {
 
-            guard let name = dictionary["name"] else {
-                throw ParsingError.missingValue(field: "name")
+            guard let name = try slots["name"]?.string() else {
+                throw CLReadError.missingValue(field: "name")
             }
 
             self.name = name
 
-            guard let ageRaw = dictionary["age"] else {
-                throw ParsingError.missingValue(field: "age")
-            }
-
-            guard let age = Int(ageRaw) else {
-                throw ParsingError.unreadableValue(field: "age", value: ageRaw, type: Int.self)
+            guard let age = try slots["age"]?.int() else {
+                throw CLReadError.missingValue(field: "age")
             }
 
             self.age = age
         }
     }
     
-    struct Couple: InitiableWithStringsDictionary {
+    struct Couple: CLDecodable  {
         let one: Person
         let two: Person
         
-        init(dictionary: [String : String]) throws {
+        init(from slots: [String : CLToken]) throws {
 
-            guard let one = dictionary["one"] else {
-                throw ParsingError.missingValue(field: "one")
+            guard let one: Person = try slots["one"]?.clStruct() else {
+                throw CLReadError.missingValue(field: "one")
             }
 
-            self.one = try read(clView: one)
+            self.one = one
 
-            guard let two = dictionary["two"] else {
-                throw ParsingError.missingValue(field: "two")
+            guard let two: Person = try slots["two"]?.clStruct() else {
+                throw CLReadError.missingValue(field: "two")
             }
 
-            self.two = try read(clView: two)
+            self.two = two
         }
     }
 
     
     // MARK: - Test suit
 
+    func test_Literal_tokenization() throws {
+
+        let string = "\" Brb \\\" done\""
+
+        var tokenizer = Tokenizer(clView: string)
+
+        switch try tokenizer.nextToken() {
+        case .some(.literal(let str)):
+            XCTAssertEqual(str, " Brb \" done")
+
+        case let wrongResult:
+            XCTFail("Wrong result: \(String(describing: wrongResult))")
+        }
+    }
+
     func test_Reading_simple_structure() throws {
 
-        let person: Person = try read(
+        let person: Person = try readStruct(
             clView: "#s(person :age 30 :name \"Bob\")"
         )
 
@@ -74,7 +84,7 @@ class Read_spec: XCTestCase {
 
     func test_Reading_structure_with_screened_quotes() throws {
 
-        let person: Person = try read(
+        let person: Person = try readStruct(
             clView: "#s(person :age 30 :name \"Bob \\\"the Builder\\\"\")"
         )
 
@@ -83,8 +93,8 @@ class Read_spec: XCTestCase {
     }
     
     func test_Reading_nested_structure() throws {
-     
-        let couple: Couple = try read(
+    
+        let couple: Couple = try readStruct(
             clView: """
                     #s(couple
                         :one #s(person :age 30 :name "Bob")
@@ -101,15 +111,13 @@ class Read_spec: XCTestCase {
     func test_Parsing_performance() throws {
         
         measure {
-            for _ in 0...3000 {
-                try! test_Reading_nested_structure()
-            }
+            for _ in 0...3000 { try! test_Reading_nested_structure() }
         }        
     }
 
+    // TODO: test lists transformation into arrays
     // TODO: test transformation from kebab to camel cases for property names
     // TODO: test upper cased format of CL structures
-    // TODO: test lists transformation into arrays
 
     // TODO: test encoding of simple structs
     // TODO: test encoding of nested structs
@@ -122,37 +130,4 @@ class Read_spec: XCTestCase {
         ("test_Reading_structure_with_screened_quotes", test_Reading_structure_with_screened_quotes),
         ("test_Reading_nested_structure", test_Reading_nested_structure),
     ]
-}
-
-
-// TODO: move elsewhere
-class StringParsingTools_spec: XCTestCase {
-
-    func test_ClosingQuoteIndex() {
-
-        let string = "Brb \\\"  \""
-
-        XCTAssertNotNil(string.closingQuoteIndex())
-        XCTAssertEqual(string.closingQuoteIndex(), string.index(before: string.endIndex))
-    }
-
-    func test_UnscreenedLiteral() throws {
-
-        let literal = "Bob \\\"the Builder\\\""
-        XCTAssertEqual(try literal.unscreenedLiteral(), "Bob \"the Builder\"")
-    }
-    
-    func test_ClosingParanthesis() {
-        
-        let string = "brb(aou otuhf, nthue( oaeut ,24anu ())oaeu)"
-        
-        XCTAssertNotNil(string.closingParanthesisIndex())
-        XCTAssertEqual(string.closingParanthesisIndex(), string.index(before: string.endIndex))
-    }
-    
-    static var allTests = [
-        ("test_ClosingQuoteIndex", test_ClosingQuoteIndex),
-        ("test_UnscreenedLiteral", test_UnscreenedLiteral)
-    ]
-
 }
