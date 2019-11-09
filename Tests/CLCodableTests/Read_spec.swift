@@ -97,11 +97,19 @@ class Read_spec: XCTestCase {
         XCTAssertEqual(couple.two.name, "Felicia")
         XCTAssertEqual(couple.two.age, 29)
     }
+    
+    func test_Parsing_performance() throws {
+        
+        measure {
+            for _ in 0...3000 {
+                try! test_Reading_nested_structure()
+            }
+        }        
+    }
 
     // TODO: test transformation from kebab to camel cases for property names
     // TODO: test upper cased format of CL structures
     // TODO: test lists transformation into arrays
-    // TODO: add performance tests
 
     // TODO: test encoding of simple structs
     // TODO: test encoding of nested structs
