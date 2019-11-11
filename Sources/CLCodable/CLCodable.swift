@@ -19,6 +19,8 @@ public protocol CLEncodable {
 public typealias CLCodable = CLEncodable & CLDecodable
 
 
+// MARK: - Reading (Decoding)
+
 public func readStruct<T: CLDecodable>(clView: String) throws -> T {
 
     var tokenizer = CLTokenizer(clView: clView)
@@ -79,4 +81,12 @@ public func readList<T: CLDecodable>(clView: String) throws -> [T] {
         throw CLReadError.wrongRoot(token, .init(message))
     }
 }
+
+
+// MARK: - Printing (Encoding)
+
+public func printStruct<T: CLEncodable>(_ structure: T) throws -> String {
+    return try structure.encode().print()
+}
+
 

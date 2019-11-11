@@ -9,7 +9,7 @@ import Foundation
 
 
 
-/// Shortcut methods
+/// Shortcuts for types unwrapping methods
 public extension CLToken {
 
     func string() throws -> String {

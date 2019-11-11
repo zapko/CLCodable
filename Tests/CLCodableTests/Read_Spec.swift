@@ -11,53 +11,6 @@ import XCTest
 
 
 class Read_Spec: XCTestCase {
-    
-    
-    // MARK: - Sample structures definition
-
-    struct Dummy: CLDecodable {
-        init(from slots: [String : CLToken]) throws {}
-    }
-    
-    struct Person: CLDecodable {
-        let name: String
-        let age:  Int
-
-        init(from slots: [String : CLToken]) throws {
-
-            guard let name = try slots["name"]?.string() else {
-                throw CLReadError.missingValue(.init("name"))
-            }
-
-            self.name = name
-
-            guard let age = try slots["age"]?.int() else {
-                throw CLReadError.missingValue(.init("age"))
-            }
-
-            self.age = age
-        }
-    }
-    
-    struct Couple: CLDecodable  {
-        let one: Person
-        let two: Person
-        
-        init(from slots: [String : CLToken]) throws {
-
-            guard let one: Person = try slots["one"]?.clStruct() else {
-                throw CLReadError.missingValue(.init("one"))
-            }
-
-            self.one = one
-
-            guard let two: Person = try slots["two"]?.clStruct() else {
-                throw CLReadError.missingValue(.init("two"))
-            }
-
-            self.two = two
-        }
-    }
 
     
     // MARK: - Test suit
@@ -224,12 +177,6 @@ class Read_Spec: XCTestCase {
 
     // TODO: test transformation from kebab to camel cases for property names
     // TODO: test upper cased format of CL structures
-
-    // TODO: test encoding of simple structs
-    // TODO: test encoding of nested structs
-    // TODO: test encoding of structs with literals with quotes
-    // TODO: test encoding of arrays into lists
-    // TODO: add performance tests
 
     static var allTests = [
         ("test_Reading_simple_structure", test_Reading_simple_structure),

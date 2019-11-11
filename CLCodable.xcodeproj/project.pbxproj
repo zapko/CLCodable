@@ -21,6 +21,9 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		C09923C02379E36500FDB86F /* Print_Spec.swift in Sources */ = {isa = PBXBuildFile; fileRef = C09923BF2379E36500FDB86F /* Print_Spec.swift */; };
+		C09923C22379E3AA00FDB86F /* SampleStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = C09923C12379E3AA00FDB86F /* SampleStructures.swift */; };
+		C09923C42379E82B00FDB86F /* CLToken+Wrappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C09923C32379E82B00FDB86F /* CLToken+Wrappers.swift */; };
 		C0C2585D23794A75003EEFAF /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C2585C23794A75003EEFAF /* Errors.swift */; };
 		C0C2585F23794A9C003EEFAF /* CLToken+Unwrappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C2585E23794A9C003EEFAF /* CLToken+Unwrappers.swift */; };
 		C0C2586123794B26003EEFAF /* CLToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C2586023794B26003EEFAF /* CLToken.swift */; };
@@ -50,6 +53,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C09923BF2379E36500FDB86F /* Print_Spec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Print_Spec.swift; sourceTree = "<group>"; };
+		C09923C12379E3AA00FDB86F /* SampleStructures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleStructures.swift; sourceTree = "<group>"; };
+		C09923C32379E82B00FDB86F /* CLToken+Wrappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLToken+Wrappers.swift"; sourceTree = "<group>"; };
 		C0C2585C23794A75003EEFAF /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		C0C2585E23794A9C003EEFAF /* CLToken+Unwrappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLToken+Unwrappers.swift"; sourceTree = "<group>"; };
 		C0C2586023794B26003EEFAF /* CLToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLToken.swift; sourceTree = "<group>"; };
@@ -95,6 +101,8 @@
 			isa = PBXGroup;
 			children = (
 				OBJ_12 /* Read_Spec.swift */,
+				C09923BF2379E36500FDB86F /* Print_Spec.swift */,
+				C09923C12379E3AA00FDB86F /* SampleStructures.swift */,
 				C0C25864237959D2003EEFAF /* Tokenizer_Spec.swift */,
 				OBJ_13 /* XCTestManifests.swift */,
 			);
@@ -137,6 +145,7 @@
 				C0C2586223794BF1003EEFAF /* CLCodable.swift */,
 				C0C2586023794B26003EEFAF /* CLToken.swift */,
 				C0C2585E23794A9C003EEFAF /* CLToken+Unwrappers.swift */,
+				C09923C32379E82B00FDB86F /* CLToken+Wrappers.swift */,
 				C0C2585C23794A75003EEFAF /* Errors.swift */,
 			);
 			name = CLCodable;
@@ -231,6 +240,7 @@
 				C0C2586323794BF1003EEFAF /* CLCodable.swift in Sources */,
 				C0C2586123794B26003EEFAF /* CLToken.swift in Sources */,
 				C0C2585F23794A9C003EEFAF /* CLToken+Unwrappers.swift in Sources */,
+				C09923C42379E82B00FDB86F /* CLToken+Wrappers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -246,8 +256,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
+				C09923C22379E3AA00FDB86F /* SampleStructures.swift in Sources */,
 				OBJ_42 /* Read_Spec.swift in Sources */,
 				C0C2586623795BD9003EEFAF /* Tokenizer_Spec.swift in Sources */,
+				C09923C02379E36500FDB86F /* Print_Spec.swift in Sources */,
 				OBJ_43 /* XCTestManifests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
