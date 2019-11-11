@@ -10,6 +10,8 @@ import XCTest
 @testable import CLCodable
 
 
+// FIXME: Most assertions here are fragile to implementation changes (i.e. properties reordering)
+
 class Print_Spec: XCTestCase {
     
     
@@ -36,11 +38,32 @@ class Print_Spec: XCTestCase {
         )
     }
 
-    // TODO: test encoding of nested structs
-    // TODO: test encoding of structs with literals with quotes
-    // TODO: test encoding of arrays into lists
-    // TODO: add performance tests
+    func test_Printing_literals_screens_quotes() throws {
 
+        let person = Person(name: "Robert \"Bob\"", age: 55)
 
+        let clView = try printStruct(person)
 
+        XCTAssertEqual(clView, "#S(PERSON :NAME \"Robert \\\"Bob\\\"\" :AGE 55)")
+    }
+
+    func test_Printing_nested_struct() throws {
+
+        let couple = Couple(
+            one: .init(name: "Fox",  age: 30),
+            two: .init(name: "Dana", age: 29)
+        )
+
+        let clView = try printStruct(couple)
+
+        XCTAssertEqual(clView, "#S(COUPLE :ONE #S(PERSON :NAME \"Fox\" :AGE 30) :TWO #S(PERSON :NAME \"Dana\" :AGE 29))")
+    }
+
+    func test_Printing_lists() throws {
+        XCTFail("Not implemented")
+    }
+
+    func test_Printing_many_items_is_reasonably_fast() throws {
+        XCTFail("Not implemented")
+    }
 }
