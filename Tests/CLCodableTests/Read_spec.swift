@@ -13,6 +13,10 @@ class Read_spec: XCTestCase {
     
     
     // MARK: - Sample structures definition
+
+    struct Dummy: CLDecodable {
+        init(from slots: [String : CLToken]) throws {}
+    }
     
     struct Person: CLDecodable {
         let name: String
@@ -84,10 +88,28 @@ class Read_spec: XCTestCase {
         }
     }
 
+    func test_Reading_trivial_structure() {
+        XCTAssertNoThrow(try readStruct(clView: "#s(dummy)") as Dummy)
+    }
+
     func test_Reading_simple_structure() throws {
 
         let person: Person = try readStruct(
             clView: "#s(person :age 30 :name \"Bob\")"
+        )
+
+        XCTAssertEqual(person.name, "Bob")
+        XCTAssertEqual(person.age, 30)
+    }
+
+    func test_Reading_simple_structure_ignores_additional_spaces_and_newlines() throws {
+
+        let person: Person = try readStruct(
+            clView: """
+                    #s(  person    :age   30 
+                    :name 
+                    \"Bob\")
+                    """
         )
 
         XCTAssertEqual(person.name, "Bob")

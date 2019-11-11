@@ -96,13 +96,16 @@ internal struct CLTokenizer {
                  ("\n", false),
                  ("\r", false),
                  ("\t", false):
-                nameDefined = true
+                nameDefined = !structName.isEmpty
 
             case ( " ", true),
                  ("\n", true),
                  ("\r", true),
                  ("\t", true):
                 continue
+
+            case (")", _):
+                return .structure(name: structName, slots: slots)
 
             case (_, false):
                 structName.unicodeScalars.append(char)
@@ -117,8 +120,6 @@ internal struct CLTokenizer {
 
                 slots[fieldName] = try nextToken()
 
-            case (")", true):
-                return .structure(name: structName, slots: slots)
 
             case (_, true):
                 let message = "Malformed struct. Name '\(structName)'. Slots '\(slots)'. Received '\(char)'"
