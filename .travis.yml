@@ -2,6 +2,7 @@ matrix:
   include:
     - os: osx
       name: "macOS"
+      osx_image: xcode11.2
       language: swift
       sudo: required
       install:
