@@ -61,7 +61,7 @@ class Read_spec: XCTestCase {
 
         let string = "\" Brb \\\" done\""
 
-        var tokenizer = Tokenizer(clView: string)
+        var tokenizer = CLTokenizer(clView: string)
 
         switch try tokenizer.nextToken() {
         case .some(.literal(let str)):
@@ -69,6 +69,18 @@ class Read_spec: XCTestCase {
 
         case let wrongResult:
             XCTFail("Wrong result: \(String(describing: wrongResult))")
+        }
+    }
+
+    func test_Reading_empty_string_throws() throws {
+        
+        XCTAssertThrowsError(try readStruct(clView: "") as Person) {
+            error in
+
+            switch error {
+            case CLReadError.emptyView: break
+            default: XCTFail("Wrong error: \(error)")
+            }
         }
     }
 

@@ -1,102 +1,22 @@
+//
+//  CLTokenizer.swift
+//  CLCodable
+//
+//  Created by Zapko on 2019-11-10.
+//
+
 import Foundation
 
-
-public enum CLPrintError: Error {}
-
-public enum CLReadError: Error, CustomNSError {
-
-    public struct Context {
-        let message: String
-
-        public init(_ message: String) {
-            self.message = message
-        }
-    }
-
-    case dataCorrupted(Context)
-    case emptyView
-    case wrongRoot(CLToken, Context)
-    case typeMismatch(Context)
-    case missingValue(Context)
-
-    public var errorUserInfo: [String : Any] {
-        return [NSLocalizedDescriptionKey : localizedDescription]
-    }
-
-    public var localizedDescription: String {
-        switch self {
-
-        case .emptyView:
-            return "CLReadError.emptyView"
-
-        case .wrongRoot(let token):
-            return "CLReadError.wrongRoot: \(token)"
-
-        case .typeMismatch(let context):
-            return "CLReadError.typeMismatch: \(context.message)"
-
-        case .dataCorrupted(let context):
-            return "CLReadError.dataCorrupted: \(context.message)"
-            
-        case .missingValue(let context):
-            return "CLReadError.missingValue: \(context.message)"
-        }
-    }
-}
 
 public indirect enum CLToken: Equatable {
     case cons(CLToken, CLToken)
     case number(String)
     case literal(String)
     case structure(name: String, slots: [String : CLToken])
-
-    func string() throws -> String {
-        switch self {
-        case .literal(let string):
-            return string
-
-        default:
-            let message = "Looking for literal, in '\(self)'"
-            throw CLReadError.typeMismatch(.init(message))
-        }
-    }
-
-    func int() throws -> Int {
-        switch self {
-        case .number(let raw):
-
-            if let int = Int(raw) { return int }
-
-            let message = "Malformed integer: '\(raw)'"
-            throw CLReadError.dataCorrupted(.init(message))
-
-        default:
-            let message = "Looking for literal, in '\(self)'"
-            throw CLReadError.typeMismatch(.init(message))
-        }
-    }
-
-    func clStruct<T: CLDecodable>() throws -> T {
-
-        switch self {
-        case let .structure(name, slots):
-
-            guard name.uppercased() == "\(T.self)".uppercased() else {
-                let message = "Expecting '\(T.self)' read '\(name)'"
-                throw CLReadError.typeMismatch(.init(message))
-            }
-
-            return try T(from: slots)
-
-        default:
-            let message = "Looking for literal, in '\(self)'"
-            throw CLReadError.typeMismatch(.init(message))
-        }
-    }
 }
 
 
-struct Tokenizer {
+internal struct CLTokenizer {
 
 
     // MARK: - Private state
@@ -169,7 +89,7 @@ struct Tokenizer {
         
         while let char = nextScalar() {
             switch (char, nameDefined) {
-            case ( " ", false), 
+            case ( " ", false),
                  ("\n", false),
                  ("\t", false),
                  ("\r", false):
@@ -269,40 +189,5 @@ struct Tokenizer {
 
         let message = "Non-terminated number '\(token)'"
         throw CLReadError.dataCorrupted(.init(message))
-    }
-}
-
-public protocol CLDecodable {
-    init(from slots: [String : CLToken]) throws
-}
-
-public protocol CLEncodable {
-    func encode() throws -> CLToken
-}
-
-public typealias CLCodable = CLEncodable & CLDecodable
-
-
-public func readStruct<T: CLDecodable>(clView: String) throws -> T {
-
-    var tokenizer = Tokenizer(clView: clView)
-
-    guard let token = try tokenizer.nextToken() else {
-        throw CLReadError.emptyView
-    }
-
-    switch token {
-    case let .structure(name, slots):
-
-        guard "\(T.self)".uppercased() == name.uppercased() else {
-            let message = "Expected root: '\(T.self)'"
-            throw CLReadError.wrongRoot(token, .init(message))
-        }
-
-        return try T(from: slots)
-
-    default:
-        let message = "Expected root: '\(T.self)'"
-        throw CLReadError.wrongRoot(token, .init(message))
     }
 }

@@ -21,7 +21,10 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		OBJ_24 /* Read.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* Read.swift */; };
+		C0C2585D23794A75003EEFAF /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C2585C23794A75003EEFAF /* Errors.swift */; };
+		C0C2585F23794A9C003EEFAF /* CLToken+Unwrappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C2585E23794A9C003EEFAF /* CLToken+Unwrappers.swift */; };
+		C0C2586123794B26003EEFAF /* CLToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C2586023794B26003EEFAF /* CLToken.swift */; };
+		C0C2586323794BF1003EEFAF /* CLCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C2586223794BF1003EEFAF /* CLCodable.swift */; };
 		OBJ_31 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
 		OBJ_42 /* Read_spec.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* Read_spec.swift */; };
 		OBJ_43 /* XCTestManifests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* XCTestManifests.swift */; };
@@ -46,6 +49,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C0C2585C23794A75003EEFAF /* Errors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
+		C0C2585E23794A9C003EEFAF /* CLToken+Unwrappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLToken+Unwrappers.swift"; sourceTree = "<group>"; };
+		C0C2586023794B26003EEFAF /* CLToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLToken.swift; sourceTree = "<group>"; };
+		C0C2586223794BF1003EEFAF /* CLCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLCodable.swift; sourceTree = "<group>"; };
 		"CLCodable::CLCodable::Product" /* CLCodable.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CLCodable.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CLCodable::CLCodableTests::Product" /* CLCodableTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = CLCodableTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		OBJ_12 /* Read_spec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Read_spec.swift; sourceTree = "<group>"; };
@@ -53,7 +60,6 @@
 		OBJ_17 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		OBJ_18 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
-		OBJ_9 /* Read.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Read.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,7 +108,7 @@
 			name = Products;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
@@ -112,7 +118,6 @@
 				OBJ_17 /* LICENSE */,
 				OBJ_18 /* README.md */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_7 /* Sources */ = {
@@ -126,7 +131,10 @@
 		OBJ_8 /* CLCodable */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_9 /* Read.swift */,
+				C0C2586223794BF1003EEFAF /* CLCodable.swift */,
+				C0C2586023794B26003EEFAF /* CLToken.swift */,
+				C0C2585E23794A9C003EEFAF /* CLToken+Unwrappers.swift */,
+				C0C2585C23794A75003EEFAF /* Errors.swift */,
 			);
 			name = CLCodable;
 			path = Sources/CLCodable;
@@ -198,7 +206,7 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_14 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -216,7 +224,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_24 /* Read.swift in Sources */,
+				C0C2585D23794A75003EEFAF /* Errors.swift in Sources */,
+				C0C2586323794BF1003EEFAF /* CLCodable.swift in Sources */,
+				C0C2586123794B26003EEFAF /* CLToken.swift in Sources */,
+				C0C2585F23794A9C003EEFAF /* CLToken+Unwrappers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
