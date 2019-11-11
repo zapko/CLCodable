@@ -105,6 +105,12 @@ internal struct CLTokenizer {
                 continue
 
             case (")", _):
+
+                if structName.isEmpty {
+                    let message = "Missing structure name"
+                    throw CLReadError.dataCorrupted(.init(message))
+                }
+
                 return .structure(name: structName, slots: slots)
 
             case (_, false):

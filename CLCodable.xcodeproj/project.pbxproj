@@ -25,8 +25,9 @@
 		C0C2585F23794A9C003EEFAF /* CLToken+Unwrappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C2585E23794A9C003EEFAF /* CLToken+Unwrappers.swift */; };
 		C0C2586123794B26003EEFAF /* CLToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C2586023794B26003EEFAF /* CLToken.swift */; };
 		C0C2586323794BF1003EEFAF /* CLCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C2586223794BF1003EEFAF /* CLCodable.swift */; };
+		C0C2586623795BD9003EEFAF /* Tokenizer_Spec.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0C25864237959D2003EEFAF /* Tokenizer_Spec.swift */; };
 		OBJ_31 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
-		OBJ_42 /* Read_spec.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* Read_spec.swift */; };
+		OBJ_42 /* Read_Spec.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* Read_Spec.swift */; };
 		OBJ_43 /* XCTestManifests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* XCTestManifests.swift */; };
 		OBJ_45 /* CLCodable.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "CLCodable::CLCodable::Product" /* CLCodable.framework */; };
 /* End PBXBuildFile section */
@@ -53,9 +54,10 @@
 		C0C2585E23794A9C003EEFAF /* CLToken+Unwrappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLToken+Unwrappers.swift"; sourceTree = "<group>"; };
 		C0C2586023794B26003EEFAF /* CLToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLToken.swift; sourceTree = "<group>"; };
 		C0C2586223794BF1003EEFAF /* CLCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLCodable.swift; sourceTree = "<group>"; };
+		C0C25864237959D2003EEFAF /* Tokenizer_Spec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokenizer_Spec.swift; sourceTree = "<group>"; };
 		"CLCodable::CLCodable::Product" /* CLCodable.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CLCodable.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CLCodable::CLCodableTests::Product" /* CLCodableTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = CLCodableTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		OBJ_12 /* Read_spec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Read_spec.swift; sourceTree = "<group>"; };
+		OBJ_12 /* Read_Spec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Read_Spec.swift; sourceTree = "<group>"; };
 		OBJ_13 /* XCTestManifests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCTestManifests.swift; sourceTree = "<group>"; };
 		OBJ_17 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		OBJ_18 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -92,7 +94,8 @@
 		OBJ_11 /* CLCodableTests */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_12 /* Read_spec.swift */,
+				OBJ_12 /* Read_Spec.swift */,
+				C0C25864237959D2003EEFAF /* Tokenizer_Spec.swift */,
 				OBJ_13 /* XCTestManifests.swift */,
 			);
 			name = CLCodableTests;
@@ -243,7 +246,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_42 /* Read_spec.swift in Sources */,
+				OBJ_42 /* Read_Spec.swift in Sources */,
+				C0C2586623795BD9003EEFAF /* Tokenizer_Spec.swift in Sources */,
 				OBJ_43 /* XCTestManifests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

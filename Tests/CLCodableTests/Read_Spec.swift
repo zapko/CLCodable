@@ -1,6 +1,6 @@
 //
-//  Parser_spec.swift
-//  cl-codableTests
+//  Read_Spec.swift
+//  CLCodableTests
 //
 //  Created by Zapko on 2019-11-03.
 //  Copyright © 2019 Zababako. All rights reserved.
@@ -9,7 +9,8 @@
 import XCTest
 @testable import CLCodable
 
-class Read_spec: XCTestCase {
+
+class Read_Spec: XCTestCase {
     
     
     // MARK: - Sample structures definition
@@ -61,24 +62,9 @@ class Read_spec: XCTestCase {
     
     // MARK: - Test suit
 
-    func test_Literal_tokenization_unscreens_slashes_and_quotes() throws {
-
-        let string = "\" Brb \\\" done\""
-
-        var tokenizer = CLTokenizer(clView: string)
-
-        switch try tokenizer.nextToken() {
-        case .some(.literal(let str)):
-            XCTAssertEqual(str, " Brb \" done")
-
-        case let wrongResult:
-            XCTFail("Wrong result: \(String(describing: wrongResult))")
-        }
-    }
-
     func test_Reading_from_empty_string_throws() throws {
         
-        XCTAssertThrowsError(try readStruct(clView: "") as Person) {
+        XCTAssertThrowsError(try readStruct(clView: "") as Dummy) {
             error in
 
             switch error {
@@ -86,6 +72,34 @@ class Read_spec: XCTestCase {
             default: XCTFail("Wrong error: \(error)")
             }
         }
+    }
+
+    func test_Reading_unnamed_struct_throws() throws {
+
+        XCTAssertThrowsError(try readStruct(clView: "#s()") as Dummy) {
+            error in
+
+            switch error {
+            case CLReadError.dataCorrupted: break
+            default: XCTFail("Wrong error: \(error)")
+            }
+        }
+    }
+
+    func test_Reading_anything_except_struct__list_or_atom_throws() throws {
+
+        let errorExpectation: (Error) -> Void = {
+            error in
+
+            switch error {
+            case CLReadError.dataCorrupted: break
+            default: XCTFail("Wrong error: \(error)")
+            }
+        }
+
+        XCTAssertThrowsError(try readStruct(clView: "#j(dummy)")  as Dummy) { errorExpectation($0) }
+        XCTAssertThrowsError(try readStruct(clView: "?(dummy)")   as Dummy) { errorExpectation($0) }
+        XCTAssertThrowsError(try readStruct(clView: "#sk(dummy)") as Dummy) { errorExpectation($0) }
     }
 
     func test_Reading_trivial_structure() {
@@ -116,7 +130,35 @@ class Read_spec: XCTestCase {
         XCTAssertEqual(person.age, 30)
     }
 
-    func test_Reading_structure_with_screened_quotes() throws {
+    func test_Reading_simple_structure_with_duplicate_values_throws() {
+
+        let data = "#s(person :age 30 :name \"Bob\" :age 23)"
+
+        XCTAssertThrowsError(try readStruct(clView: data) as Person) {
+            error in
+
+            switch error {
+            case CLReadError.dataCorrupted: break
+            default: XCTFail("Wrong error: \(error)")
+            }
+        }
+    }
+
+    func test_Reading_simple_structure_with_unclear_field_names_throws() {
+
+        let data = "#s(person :age 30 name \"Bob\")"
+
+        XCTAssertThrowsError(try readStruct(clView: data) as Person) {
+            error in
+
+            switch error {
+            case CLReadError.dataCorrupted: break
+            default: XCTFail("Wrong error: \(error)")
+            }
+        }
+    }
+
+    func test_Reading_structure_with_screened_quotes_unscreens_them_in_value() throws {
 
         let person: Person = try readStruct(
             clView: "#s(person :age 30 :name \"Bob \\\"the Builder\\\"\")"
@@ -125,7 +167,21 @@ class Read_spec: XCTestCase {
         XCTAssertEqual(person.name, "Bob \"the Builder\"")
         XCTAssertEqual(person.age, 30)
     }
-    
+
+    func test_Reading_simple_structure_with_malformed_number_throws() {
+
+        let data = "#s(person :age 3p0 name \"Bob\")"
+
+        XCTAssertThrowsError(try readStruct(clView: data) as Person) {
+            error in
+
+            switch error {
+            case CLReadError.dataCorrupted: break
+            default: XCTFail("Wrong error: \(error)")
+            }
+        }
+    }
+
     func test_Reading_nested_structure() throws {
     
         let couple: Couple = try readStruct(
@@ -153,15 +209,17 @@ class Read_spec: XCTestCase {
         
         let people: [Person] = try readList(
             clView: """
-                    (#s(person :age 7 :name "Rob") #s(person :age 8 :name "Bob"))
+                    (#s(person :age 30 :name "Rob") 
+                     #s(person :age 27 :name "Bob")
+                     #s(person :age 33 :name "Cop"))
                     """
         )
         
-        XCTAssertEqual(people.count, 2)
+        XCTAssertEqual(people.count, 3)
         XCTAssertEqual(people.first?.name, "Rob")
-        XCTAssertEqual(people.first?.age, 7)
-        XCTAssertEqual(people.last?.name, "Bob")
-        XCTAssertEqual(people.last?.age, 8)
+        XCTAssertEqual(people.first?.age, 30)
+        XCTAssertEqual(people.last?.name, "Cop")
+        XCTAssertEqual(people.last?.age, 33)
     }
 
     // TODO: test transformation from kebab to camel cases for property names
@@ -175,7 +233,6 @@ class Read_spec: XCTestCase {
 
     static var allTests = [
         ("test_Reading_simple_structure", test_Reading_simple_structure),
-        ("test_Reading_structure_with_screened_quotes", test_Reading_structure_with_screened_quotes),
-        ("test_Reading_nested_structure", test_Reading_nested_structure),
+        ("test_Reading_nested_structure", test_Reading_nested_structure)
     ]
 }
