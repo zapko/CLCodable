@@ -1,5 +1,6 @@
 # CLCodable
 Codable protocol for Common Lisp structures
+[![Build Status](https://travis-ci.org/zapko/CLCodable.svg?branch=develop)](https://travis-ci.org/zapko/CLCodable)
 
 ## Example
 ```Swift
