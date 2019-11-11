@@ -9,7 +9,7 @@ import Foundation
 
 
 public indirect enum CLToken: Equatable {
-    case cons(CLToken, CLToken)
+    case cons(CLToken, CLToken?)
     case number(String)
     case literal(String)
     case structure(name: String, slots: [String : CLToken])
@@ -36,7 +36,7 @@ internal struct CLTokenizer {
         while let char = nextScalar() {
 
             switch char {
-            case " ", "\n", "\t", "\r":
+            case " ", "\n", "\r", "\t":
                 continue
 
             case "#":
@@ -48,6 +48,9 @@ internal struct CLTokenizer {
                     let message = "Found '\(char)' after '#' on root level"
                     throw CLReadError.dataCorrupted(.init(message))
                 }
+
+            case "(":
+                return try consToken()
 
             case "\"":
                 return try literalToken()
@@ -91,14 +94,14 @@ internal struct CLTokenizer {
             switch (char, nameDefined) {
             case ( " ", false),
                  ("\n", false),
-                 ("\t", false),
-                 ("\r", false):
+                 ("\r", false),
+                 ("\t", false):
                 nameDefined = true
 
             case ( " ", true),
                  ("\n", true),
-                 ("\t", true),
-                 ("\r", true):
+                 ("\r", true),
+                 ("\t", true):
                 continue
 
             case (_, false):
@@ -124,6 +127,30 @@ internal struct CLTokenizer {
         }
 
         let message = "Non-terminated structure"
+        throw CLReadError.dataCorrupted(.init(message))
+    }
+
+    mutating func consToken() throws -> CLToken? {
+
+        loop: while let char = nextScalar() {
+
+            switch char {
+            case " ", "\n", "\r", "\t":
+                continue
+
+            case ")":
+                return nil
+
+            default:
+                cachedScalar = char
+
+                guard let car = try nextToken() else { break loop }
+
+                return .cons(car, try consToken())
+            }
+        }
+
+        let message = "Non-terminated list"
         throw CLReadError.dataCorrupted(.init(message))
     }
 

@@ -12,7 +12,7 @@ import XCTest
 class Read_spec: XCTestCase {
     
     
-    // MARK: - Structures definition
+    // MARK: - Sample structures definition
     
     struct Person: CLDecodable {
         let name: String
@@ -57,7 +57,7 @@ class Read_spec: XCTestCase {
     
     // MARK: - Test suit
 
-    func test_Literal_tokenization() throws {
+    func test_Literal_tokenization_unscreens_slashes_and_quotes() throws {
 
         let string = "\" Brb \\\" done\""
 
@@ -72,7 +72,7 @@ class Read_spec: XCTestCase {
         }
     }
 
-    func test_Reading_empty_string_throws() throws {
+    func test_Reading_from_empty_string_throws() throws {
         
         XCTAssertThrowsError(try readStruct(clView: "") as Person) {
             error in
@@ -120,14 +120,28 @@ class Read_spec: XCTestCase {
         XCTAssertEqual(couple.two.age, 29)
     }
     
-    func test_Parsing_performance() throws {
+    func test_Reading_many_items_is_reasonably_fast() throws {
         
         measure {
             for _ in 0...3000 { try! test_Reading_nested_structure() }
         }        
     }
+    
+    func test_Reading_list_creates_an_array_of_entities() throws {
+        
+        let people: [Person] = try readList(
+            clView: """
+                    (#s(person :age 7 :name "Rob") #s(person :age 8 :name "Bob"))
+                    """
+        )
+        
+        XCTAssertEqual(people.count, 2)
+        XCTAssertEqual(people.first?.name, "Rob")
+        XCTAssertEqual(people.first?.age, 7)
+        XCTAssertEqual(people.last?.name, "Bob")
+        XCTAssertEqual(people.last?.age, 8)
+    }
 
-    // TODO: test lists transformation into arrays
     // TODO: test transformation from kebab to camel cases for property names
     // TODO: test upper cased format of CL structures
 

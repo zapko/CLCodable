@@ -42,3 +42,41 @@ public func readStruct<T: CLDecodable>(clView: String) throws -> T {
         throw CLReadError.wrongRoot(token, .init(message))
     }
 }
+
+public func readList<T: CLDecodable>(clView: String) throws -> [T] {
+
+    var tokenizer = CLTokenizer(clView: clView)
+
+    guard let token = try tokenizer.nextToken() else {
+        throw CLReadError.emptyView
+    }
+
+    switch token {
+    case let .cons(car, cdr):
+
+        var result: [T] = [try car.clStruct()]
+
+        func read(tail: CLToken?) throws {
+
+            guard let tail = tail else { return }
+
+            switch tail {
+            case let .cons(car, cdr):
+                result.append(try car.clStruct())
+                try read(tail: cdr)
+            default:
+                let message = "Unhandled list structure. Was expecting 'cons', received '\(tail)'"
+                throw CLReadError.typeMismatch(.init(message))
+            }
+        }
+
+        try read(tail: cdr)
+
+        return result
+
+    default:
+        let message = "Expected root: '\(T.self)'"
+        throw CLReadError.wrongRoot(token, .init(message))
+    }
+}
+
