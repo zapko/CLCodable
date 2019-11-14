@@ -15,7 +15,7 @@ struct Dummy { }
 
 extension Dummy: CLDecodable {
 
-    init(from slots: [String : CLToken]) throws {}
+    init(clToken: CLToken) throws {}
 }
 
 extension Dummy: CLEncodable {
@@ -35,7 +35,17 @@ struct Person {
 
 extension Person: CLDecodable {
 
-    init(from slots: [String : CLToken]) throws {
+    init(clToken: CLToken) throws {
+
+        guard case .structure(let structureName, let slots) = clToken else {
+            let message = "Expected structure root, got: '\(clToken)'"
+            throw CLReadError.wrongRoot(.init(message))
+        }
+
+        guard "\(type(of: self))" == structureName else {
+            let message = "Expected structure of type '\(type(of: self))', got: '\(clToken)'"
+            throw CLReadError.wrongRoot(.init(message))
+        }
 
         guard let name = try slots["name"]?.string() else {
             throw CLReadError.missingValue(.init("name"))
@@ -73,16 +83,26 @@ struct Couple {
 }
 
 extension Couple: CLDecodable {
-    
-    init(from slots: [String : CLToken]) throws {
 
-        guard let one: Person = try slots["one"]?.clStruct() else {
+    init(clToken: CLToken) throws {
+
+        guard case .structure(let name, let slots) = clToken else {
+            let message = "Expected structure root, got: '\(clToken)'"
+            throw CLReadError.wrongRoot(.init(message))
+        }
+
+        guard "\(type(of: self))" == name else {
+            let message = "Expected structure of type '\(type(of: self))', got: '\(clToken)'"
+            throw CLReadError.wrongRoot(.init(message))
+        }
+
+        guard let one: Person = try slots["one"].map(Person.init(clToken:)) else {
             throw CLReadError.missingValue(.init("one"))
         }
 
         self.one = one
 
-        guard let two: Person = try slots["two"]?.clStruct() else {
+        guard let two: Person = try slots["two"].map(Person.init) else {
             throw CLReadError.missingValue(.init("two"))
         }
 

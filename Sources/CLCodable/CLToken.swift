@@ -9,7 +9,8 @@ import Foundation
 
 
 public indirect enum CLToken: Equatable {
-    case cons(CLToken, CLToken?)
+    case empty // NIL in CL
+    case cons(CLToken, CLToken)
     case number(String)
     case literal(String)
     case structure(name: String, slots: [String : CLToken])
@@ -23,6 +24,8 @@ internal struct CLTokenizer {
 
     private var iterator: String.UnicodeScalarView.Iterator
     private var cachedScalar: UnicodeScalar?
+    
+    private let decoder = JSONDecoder()
 
 
     // MARK: - Initializer
@@ -111,7 +114,10 @@ internal struct CLTokenizer {
                     throw CLReadError.dataCorrupted(.init(message))
                 }
 
-                return .structure(name: structName, slots: slots)
+                return .structure(
+                    name:  styleFromCLToSwift(name: structName),
+                    slots: slots
+                )
 
             case (_, false):
                 structName.unicodeScalars.append(char)
@@ -137,7 +143,7 @@ internal struct CLTokenizer {
         throw CLReadError.dataCorrupted(.init(message))
     }
 
-    mutating func consToken() throws -> CLToken? {
+    mutating func consToken() throws -> CLToken {
 
         loop: while let char = nextScalar() {
 
@@ -146,7 +152,7 @@ internal struct CLTokenizer {
                 continue
 
             case ")":
-                return nil
+                return .empty
 
             default:
                 cachedScalar = char
@@ -178,26 +184,32 @@ internal struct CLTokenizer {
     mutating func literalToken() throws -> CLToken {
 
         var escaped = false
-        var literal = ""
+        var literal = "\""
 
         while let char = nextScalar() {
+            
+            literal.unicodeScalars.append(char)
+
             switch (char, escaped) {
-            case (_, true):
-                literal.unicodeScalars.append(char)
-                escaped = false
+            case ("\"", false):
+
+                guard let literalData = literal.data(using: .utf8) else {
+                    throw CLReadError.literalConversionFailed(.init(literal))
+                }
+
+                return .literal(try decoder.decode(String.self, from: literalData))
 
             case ("\\", false):
                 escaped = true
+                continue
 
-            case ("\"", false):
-                return .literal(literal)
-
-            case (_, false):
-                literal.unicodeScalars.append(char)
+            case (_, _):
+                break
             }
+            escaped = false
         }
 
-        let message = "Non-terminated string literal"
+        let message = "Non-terminated string literal. Context: \(literal)"
         throw CLReadError.dataCorrupted(.init(message))
     }
 
@@ -224,4 +236,15 @@ internal struct CLTokenizer {
         let message = "Non-terminated number '\(token)'"
         throw CLReadError.dataCorrupted(.init(message))
     }
+}
+
+func styleFromCLToSwift(name: String) -> String {
+    name
+        .components(separatedBy: "-")
+        .map { $0.capitalized }
+        .joined()
+}
+
+func styleFromSwiftToCL(name: String) -> String {
+    name
 }

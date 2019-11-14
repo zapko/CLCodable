@@ -9,7 +9,7 @@ import Foundation
 
 
 
-public enum CLReadError: Error, CustomNSError {
+public enum CLReadError: Error {
 
     public struct Context {
         let message: String
@@ -21,34 +21,22 @@ public enum CLReadError: Error, CustomNSError {
 
     case dataCorrupted(Context)
     case emptyView
-    case wrongRoot(CLToken, Context)
+    case wrongRoot(Context)
     case typeMismatch(Context)
     case missingValue(Context)
-
-    public var errorUserInfo: [String : Any] {
-        return [NSLocalizedDescriptionKey : localizedDescription]
-    }
-
-    public var localizedDescription: String {
-        switch self {
-
-        case .emptyView:
-            return "CLReadError.emptyView"
-
-        case .wrongRoot(let token):
-            return "CLReadError.wrongRoot: \(token)"
-
-        case .typeMismatch(let context):
-            return "CLReadError.typeMismatch: \(context.message)"
-
-        case .dataCorrupted(let context):
-            return "CLReadError.dataCorrupted: \(context.message)"
-            
-        case .missingValue(let context):
-            return "CLReadError.missingValue: \(context.message)"
-        }
-    }
+    case literalConversionFailed(Context)
 }
 
-public enum CLPrintError: Error {}
+public enum CLPrintError: Error {
+
+    public struct Context {
+        let message: String
+
+        public init(_ message: String) {
+            self.message = message
+        }
+    }
+
+    case literalConversionFailed(Context)
+}
 

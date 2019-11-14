@@ -9,7 +9,7 @@ import Foundation
 
 
 public protocol CLDecodable {
-    init(from slots: [String : CLToken]) throws
+    init(clToken token: CLToken) throws
 }
 
 public protocol CLEncodable {
@@ -21,51 +21,50 @@ public typealias CLCodable = CLEncodable & CLDecodable
 
 // MARK: - Reading (Decoding)
 
-public func readStruct<T: CLDecodable>(clView: String) throws -> T {
+public func clRead<T: CLDecodable>(_ view: String) throws -> T {
 
-    var tokenizer = CLTokenizer(clView: clView)
+    var tokenizer = CLTokenizer(clView: view)
 
     guard let token = try tokenizer.nextToken() else {
         throw CLReadError.emptyView
     }
 
-    switch token {
-    case let .structure(name, slots):
-
-        guard "\(T.self)".uppercased() == name.uppercased() else {
-            let message = "Expected root: '\(T.self)'"
-            throw CLReadError.wrongRoot(token, .init(message))
-        }
-
-        return try T(from: slots)
-
-    default:
-        let message = "Expected root: '\(T.self)'"
-        throw CLReadError.wrongRoot(token, .init(message))
-    }
+    return try T(clToken: token)
 }
 
-public func readList<T: CLDecodable>(clView: String) throws -> [T] {
 
-    var tokenizer = CLTokenizer(clView: clView)
+// MARK: - Printing (Encoding)
 
-    guard let token = try tokenizer.nextToken() else {
-        throw CLReadError.emptyView
-    }
+public func clPrint<T: CLEncodable>(_ structure: T) throws -> String {
+    try structure.encode().print()
+}
 
-    switch token {
-    case let .cons(car, cdr):
 
-        var result: [T] = [try car.clStruct()]
+// MARK: - Array extension
+
+extension Array: CLDecodable where Element: CLDecodable {
+
+    public init(clToken: CLToken) throws {
+
+        guard case .cons(let car, let cdr) = clToken else {
+            let message = "Expected cons root, got: '\(clToken)'"
+            throw CLReadError.wrongRoot(.init(message))
+        }
+
+        var result: [Element] = [try Element(clToken: car)]
 
         func read(tail: CLToken?) throws {
 
             guard let tail = tail else { return }
 
             switch tail {
+            case let .cons(car, .empty):
+                result.append(try Element(clToken: car))
+
             case let .cons(car, cdr):
-                result.append(try car.clStruct())
+                result.append(try Element(clToken: car))
                 try read(tail: cdr)
+
             default:
                 let message = "Unhandled list structure. Was expecting 'cons', received '\(tail)'"
                 throw CLReadError.typeMismatch(.init(message))
@@ -74,19 +73,17 @@ public func readList<T: CLDecodable>(clView: String) throws -> [T] {
 
         try read(tail: cdr)
 
-        return result
-
-    default:
-        let message = "Expected root: '\(T.self)'"
-        throw CLReadError.wrongRoot(token, .init(message))
+        self.init(result)
     }
 }
 
+extension Array: CLEncodable where Element: CLEncodable {
 
-// MARK: - Printing (Encoding)
+    public func encode() throws -> CLToken {
 
-public func printStruct<T: CLEncodable>(_ structure: T) throws -> String {
-    return try structure.encode().print()
+        try reversed().reduce(.empty) {
+            .cons(try $1.encode(), $0)
+        }
+    }
 }
-
 

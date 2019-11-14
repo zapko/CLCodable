@@ -21,7 +21,7 @@ class Print_Spec: XCTestCase {
         
         let dummy = Dummy()
         
-        let clView = try printStruct(dummy)
+        let clView = try clPrint(dummy)
         
         XCTAssertEqual(clView, "#S(DUMMY)")
     }
@@ -30,7 +30,7 @@ class Print_Spec: XCTestCase {
         
         let person = Person(name: "Timon", age: 4)
 
-        let clView = try printStruct(person)
+        let clView = try clPrint(person)
 
         XCTAssert(
             clView == "#S(PERSON :AGE 4 :NAME \"Timon\")" ||
@@ -42,9 +42,12 @@ class Print_Spec: XCTestCase {
 
         let person = Person(name: "Robert \"Bob\"", age: 55)
 
-        let clView = try printStruct(person)
+        let clView = try clPrint(person)
 
-        XCTAssertEqual(clView, "#S(PERSON :NAME \"Robert \\\"Bob\\\"\" :AGE 55)")
+        XCTAssert(
+            clView == "#S(PERSON :AGE 55 :NAME \"Robert \\\"Bob\\\"\")" ||
+            clView == "#S(PERSON :NAME \"Robert \\\"Bob\\\"\" :AGE 55)"
+        )
     }
 
     func test_Printing_nested_struct() throws {
@@ -54,16 +57,47 @@ class Print_Spec: XCTestCase {
             two: .init(name: "Dana", age: 29)
         )
 
-        let clView = try printStruct(couple)
+        let clView = try clPrint(couple)
 
-        XCTAssertEqual(clView, "#S(COUPLE :ONE #S(PERSON :NAME \"Fox\" :AGE 30) :TWO #S(PERSON :NAME \"Dana\" :AGE 29))")
+        XCTAssert(
+            clView == "#S(COUPLE :ONE #S(PERSON :NAME \"Fox\" :AGE 30) :TWO #S(PERSON :NAME \"Dana\" :AGE 29))" ||
+            clView == "#S(COUPLE :ONE #S(PERSON :NAME \"Fox\" :AGE 30) :TWO #S(PERSON :AGE 29 :NAME \"Dana\"))" ||
+            clView == "#S(COUPLE :ONE #S(PERSON :AGE 30 :NAME \"Fox\") :TWO #S(PERSON :NAME \"Dana\" :AGE 29))" ||
+            clView == "#S(COUPLE :ONE #S(PERSON :AGE 30 :NAME \"Fox\") :TWO #S(PERSON :AGE 29 :NAME \"Dana\"))" ||
+            clView == "#S(COUPLE :TWO #S(PERSON :NAME \"Dana\" :AGE 29) :ONE #S(PERSON :NAME \"Fox\" :AGE 30))" ||
+            clView == "#S(COUPLE :TWO #S(PERSON :AGE 29 :NAME \"Dana\") :ONE #S(PERSON :NAME \"Fox\" :AGE 30))" ||
+            clView == "#S(COUPLE :TWO #S(PERSON :NAME \"Dana\" :AGE 29) :ONE #S(PERSON :AGE 30 :NAME \"Fox\"))" ||
+            clView == "#S(COUPLE :TWO #S(PERSON :AGE 29 :NAME \"Dana\") :ONE #S(PERSON :AGE 30 :NAME \"Fox\"))",
+            "Not matching '\(clView)'"
+        )
     }
 
     func test_Printing_lists() throws {
-        XCTFail("Not implemented")
+
+        let list = [
+            Person(name: "Timon", age: 4),
+            Person(name: "Pumba", age: 5),
+        ]
+
+        let clView = try clPrint(list)
+
+        XCTAssert(
+            clView == "(#S(PERSON :AGE 4 :NAME \"Timon\") #S(PERSON :AGE 5 :NAME \"Pumba\"))" ||
+            clView == "(#S(PERSON :AGE 4 :NAME \"Timon\") #S(PERSON :NAME \"Pumba\" :AGE 5))" ||
+            clView == "(#S(PERSON :NAME \"Timon\" :AGE 4) #S(PERSON :AGE 5 :NAME \"Pumba\"))" ||
+            clView == "(#S(PERSON :NAME \"Timon\" :AGE 4) #S(PERSON :NAME \"Pumba\" :AGE 5))",
+            "Not matching '\(clView)'"
+        )
     }
 
     func test_Printing_many_items_is_reasonably_fast() throws {
-        XCTFail("Not implemented")
+        
+        measure {
+            do {
+                for _ in 0...10000 { try test_Printing_nested_struct() }
+            } catch {
+                XCTFail("Failed to run single iteration")
+            }
+        }
     }
 }

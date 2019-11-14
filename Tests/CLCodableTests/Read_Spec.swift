@@ -17,7 +17,7 @@ class Read_Spec: XCTestCase {
 
     func test_Reading_from_empty_string_throws() throws {
         
-        XCTAssertThrowsError(try readStruct(clView: "") as Dummy) {
+        XCTAssertThrowsError(try clRead("") as Dummy) {
             error in
 
             switch error {
@@ -29,7 +29,7 @@ class Read_Spec: XCTestCase {
 
     func test_Reading_unnamed_struct_throws() throws {
 
-        XCTAssertThrowsError(try readStruct(clView: "#s()") as Dummy) {
+        XCTAssertThrowsError(try clRead("#s()") as Dummy) {
             error in
 
             switch error {
@@ -50,20 +50,18 @@ class Read_Spec: XCTestCase {
             }
         }
 
-        XCTAssertThrowsError(try readStruct(clView: "#j(dummy)")  as Dummy) { errorExpectation($0) }
-        XCTAssertThrowsError(try readStruct(clView: "?(dummy)")   as Dummy) { errorExpectation($0) }
-        XCTAssertThrowsError(try readStruct(clView: "#sk(dummy)") as Dummy) { errorExpectation($0) }
+        XCTAssertThrowsError(try clRead("#j(dummy)")  as Dummy) { errorExpectation($0) }
+        XCTAssertThrowsError(try clRead("?(dummy)")   as Dummy) { errorExpectation($0) }
+        XCTAssertThrowsError(try clRead("#sk(dummy)") as Dummy) { errorExpectation($0) }
     }
 
     func test_Reading_trivial_structure() {
-        XCTAssertNoThrow(try readStruct(clView: "#s(dummy)") as Dummy)
+        XCTAssertNoThrow(try clRead("#s(dummy)") as Dummy)
     }
 
     func test_Reading_simple_structure() throws {
 
-        let person: Person = try readStruct(
-            clView: "#s(person :age 30 :name \"Bob\")"
-        )
+        let person: Person = try clRead("#s(person :age 30 :name \"Bob\")")
 
         XCTAssertEqual(person.name, "Bob")
         XCTAssertEqual(person.age, 30)
@@ -71,12 +69,12 @@ class Read_Spec: XCTestCase {
 
     func test_Reading_simple_structure_ignores_additional_spaces_and_newlines() throws {
 
-        let person: Person = try readStruct(
-            clView: """
-                    #s(  person    :age   30 
-                    :name 
-                    \"Bob\")
-                    """
+        let person: Person = try clRead(
+            """
+            #s(  person    :age   30 
+                            :name 
+                \"Bob\")
+            """
         )
 
         XCTAssertEqual(person.name, "Bob")
@@ -87,7 +85,7 @@ class Read_Spec: XCTestCase {
 
         let data = "#s(person :age 30 :name \"Bob\" :age 23)"
 
-        XCTAssertThrowsError(try readStruct(clView: data) as Person) {
+        XCTAssertThrowsError(try clRead(data) as Person) {
             error in
 
             switch error {
@@ -101,7 +99,7 @@ class Read_Spec: XCTestCase {
 
         let data = "#s(person :age 30 name \"Bob\")"
 
-        XCTAssertThrowsError(try readStruct(clView: data) as Person) {
+        XCTAssertThrowsError(try clRead(data) as Person) {
             error in
 
             switch error {
@@ -113,8 +111,8 @@ class Read_Spec: XCTestCase {
 
     func test_Reading_structure_with_screened_quotes_unscreens_them_in_value() throws {
 
-        let person: Person = try readStruct(
-            clView: "#s(person :age 30 :name \"Bob \\\"the Builder\\\"\")"
+        let person: Person = try clRead(
+            "#s(person :age 30 :name \"Bob \\\"the Builder\\\"\")"
         )
 
         XCTAssertEqual(person.name, "Bob \"the Builder\"")
@@ -125,7 +123,7 @@ class Read_Spec: XCTestCase {
 
         let data = "#s(person :age 3p0 name \"Bob\")"
 
-        XCTAssertThrowsError(try readStruct(clView: data) as Person) {
+        XCTAssertThrowsError(try clRead(data) as Person) {
             error in
 
             switch error {
@@ -137,12 +135,12 @@ class Read_Spec: XCTestCase {
 
     func test_Reading_nested_structure() throws {
     
-        let couple: Couple = try readStruct(
-            clView: """
-                    #s(couple
-                        :one #s(person :age 30 :name "Bob")
-                        :two #s(person :age 29 :name "Felicia"))
-                    """
+        let couple: Couple = try clRead(
+            """
+            #s(couple
+                :one #s(person :age 30 :name "Bob")
+                :two #s(person :age 29 :name "Felicia"))
+            """
         )
         
         XCTAssertEqual(couple.one.name, "Bob")
@@ -154,18 +152,22 @@ class Read_Spec: XCTestCase {
     func test_Reading_many_items_is_reasonably_fast() throws {
         
         measure {
-            for _ in 0...3000 { try! test_Reading_nested_structure() }
-        }        
+            do {
+                for _ in 0...3000 { try test_Reading_nested_structure() }
+            } catch {
+                XCTFail("Failing single reading")
+            }
+        }
     }
     
     func test_Reading_list_creates_an_array_of_entities() throws {
         
-        let people: [Person] = try readList(
-            clView: """
-                    (#s(person :age 30 :name "Rob") 
-                     #s(person :age 27 :name "Bob")
-                     #s(person :age 33 :name "Cop"))
-                    """
+        let people: [Person] = try clRead(
+            """
+            (#s(person :age 30 :name "Rob") 
+             #s(person :age 27 :name "Bob")
+             #s(person :age 33 :name "Cop"))
+            """
         )
         
         XCTAssertEqual(people.count, 3)

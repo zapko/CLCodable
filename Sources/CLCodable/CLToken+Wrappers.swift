@@ -14,11 +14,40 @@ public extension CLToken {
     
     func print() throws -> String {
         switch self {
-        case let .cons(car, cad):
-            return ""
+        case .empty:
+            return "()"
+
+        case let .cons(car, cdr):
+
+            var listItems: [String] = [try car.print()]
+            func printCar(iCdr: CLToken?) throws {
+
+                guard let iCdr = iCdr else { return }
+
+                switch iCdr {
+                case let .cons(car, .empty):
+                    listItems.append(try car.print())
+
+                case let .cons(car, cdr):
+                    listItems.append(try car.print())
+                    try printCar(iCdr: cdr)
+
+                default:
+                    listItems.append(try iCdr.print())
+                }
+            }
+
+            try printCar(iCdr: cdr)
+
+            return "(\(listItems.joined(separator: " ")))"
             
         case let .literal(literal):
-            return "\"\(literal)\""
+            let data = try JSONEncoder().encode(literal)
+            guard let string = String(data: data, encoding: .utf8) else {
+                let message = "Failed to decode literal data for: '\(literal)'"
+                throw CLPrintError.literalConversionFailed(.init(message))
+            }
+            return string
             
         case let .number(number):
             return number

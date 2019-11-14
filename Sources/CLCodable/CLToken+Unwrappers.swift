@@ -11,6 +11,13 @@ import Foundation
 
 /// Shortcuts for types unwrapping methods
 public extension CLToken {
+    
+    func bool() -> Bool {
+        switch self {
+        case .empty: return false
+        default:     return true
+        }
+    }
 
     func string() throws -> String {
         switch self {
@@ -31,24 +38,6 @@ public extension CLToken {
 
             let message = "Malformed integer: '\(raw)'"
             throw CLReadError.dataCorrupted(.init(message))
-
-        default:
-            let message = "Looking for literal, in '\(self)'"
-            throw CLReadError.typeMismatch(.init(message))
-        }
-    }
-
-    func clStruct<T: CLDecodable>() throws -> T {
-
-        switch self {
-        case let .structure(name, slots):
-
-            guard name.uppercased() == "\(T.self)".uppercased() else {
-                let message = "Expecting '\(T.self)' read '\(name)'"
-                throw CLReadError.typeMismatch(.init(message))
-            }
-
-            return try T(from: slots)
 
         default:
             let message = "Looking for literal, in '\(self)'"
