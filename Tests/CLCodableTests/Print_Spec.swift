@@ -10,8 +10,6 @@ import XCTest
 @testable import CLCodable
 
 
-// FIXME: Most assertions here are fragile to implementation changes (i.e. properties reordering)
-
 class Print_Spec: XCTestCase {
     
     

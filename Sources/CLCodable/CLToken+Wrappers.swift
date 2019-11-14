@@ -59,7 +59,7 @@ public extension CLToken {
                 ":\(name.uppercased()) \(try value.print())"
             }
             
-            return "#S(" + ([name.uppercased()] + printedSlots).joined(separator: " ") + ")"
+            return "#S(" + ([styleFromSwiftToCL(name: name)] + printedSlots).joined(separator: " ") + ")"
         }
     }
 }

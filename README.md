@@ -49,10 +49,10 @@ func parseData() -> Foo? {
 ## What it already can
 - Read Lisp structures into Swift structures
 - Print Swift structures back into Lisp structures
+- Transform kebab-case into camelCase and back (in a simplified way)
 
 ## What it can't yet
 - Handle package names
-- Transform kebab-case into camelCase and back
 - Autogenerate decodable/encodable methods
 
 ## Distribution

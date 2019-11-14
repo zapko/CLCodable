@@ -21,6 +21,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		6E4FD6CDB1EF40128336E8AF /* NameStyling_Spec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4FD2EE044351E1F91D13DC /* NameStyling_Spec.swift */; };
+		6E4FDB1AB6A134E1A7B92151 /* NameStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4FD198984D76F90A76B3B3 /* NameStyling.swift */; };
 		C09923C02379E36500FDB86F /* Print_Spec.swift in Sources */ = {isa = PBXBuildFile; fileRef = C09923BF2379E36500FDB86F /* Print_Spec.swift */; };
 		C09923C22379E3AA00FDB86F /* SampleStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = C09923C12379E3AA00FDB86F /* SampleStructures.swift */; };
 		C09923C42379E82B00FDB86F /* CLToken+Wrappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C09923C32379E82B00FDB86F /* CLToken+Wrappers.swift */; };
@@ -40,19 +42,21 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = "CLCodable::CLCodable";
+			remoteGlobalIDString = CLCodable::CLCodable;
 			remoteInfo = CLCodable;
 		};
 		C0A1CCE923768C9E00E44250 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = "CLCodable::CLCodableTests";
+			remoteGlobalIDString = CLCodable::CLCodableTests;
 			remoteInfo = CLCodableTests;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6E4FD198984D76F90A76B3B3 /* NameStyling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NameStyling.swift; sourceTree = "<group>"; };
+		6E4FD2EE044351E1F91D13DC /* NameStyling_Spec.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NameStyling_Spec.swift; sourceTree = "<group>"; };
 		C09923BF2379E36500FDB86F /* Print_Spec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Print_Spec.swift; sourceTree = "<group>"; };
 		C09923C12379E3AA00FDB86F /* SampleStructures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleStructures.swift; sourceTree = "<group>"; };
 		C09923C32379E82B00FDB86F /* CLToken+Wrappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLToken+Wrappers.swift"; sourceTree = "<group>"; };
@@ -105,6 +109,7 @@
 				C09923C12379E3AA00FDB86F /* SampleStructures.swift */,
 				C0C25864237959D2003EEFAF /* Tokenizer_Spec.swift */,
 				OBJ_13 /* XCTestManifests.swift */,
+				6E4FD2EE044351E1F91D13DC /* NameStyling_Spec.swift */,
 			);
 			name = CLCodableTests;
 			path = Tests/CLCodableTests;
@@ -147,6 +152,7 @@
 				C0C2585E23794A9C003EEFAF /* CLToken+Unwrappers.swift */,
 				C09923C32379E82B00FDB86F /* CLToken+Wrappers.swift */,
 				C0C2585C23794A75003EEFAF /* Errors.swift */,
+				6E4FD198984D76F90A76B3B3 /* NameStyling.swift */,
 			);
 			name = CLCodable;
 			path = Sources/CLCodable;
@@ -241,6 +247,7 @@
 				C0C2586123794B26003EEFAF /* CLToken.swift in Sources */,
 				C0C2585F23794A9C003EEFAF /* CLToken+Unwrappers.swift in Sources */,
 				C09923C42379E82B00FDB86F /* CLToken+Wrappers.swift in Sources */,
+				6E4FDB1AB6A134E1A7B92151 /* NameStyling.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -261,6 +268,7 @@
 				C0C2586623795BD9003EEFAF /* Tokenizer_Spec.swift in Sources */,
 				C09923C02379E36500FDB86F /* Print_Spec.swift in Sources */,
 				OBJ_43 /* XCTestManifests.swift in Sources */,
+				6E4FD6CDB1EF40128336E8AF /* NameStyling_Spec.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

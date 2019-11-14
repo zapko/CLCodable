@@ -238,13 +238,3 @@ internal struct CLTokenizer {
     }
 }
 
-func styleFromCLToSwift(name: String) -> String {
-    name
-        .components(separatedBy: "-")
-        .map { $0.capitalized }
-        .joined()
-}
-
-func styleFromSwiftToCL(name: String) -> String {
-    name
-}
