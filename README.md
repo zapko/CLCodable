@@ -59,3 +59,9 @@ func parseData() -> Foo? {
 ## Distribution
 
 Library is distributed through Swift Package Manager
+
+```Swift
+package.dependencies.append(
+    .package(url: "https://github.com/zapko/CLCodable", from: "0.8.1")
+)
+```
