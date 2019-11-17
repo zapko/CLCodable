@@ -42,13 +42,19 @@ public extension CLToken {
             return "(\(listItems.joined(separator: " ")))"
             
         case let .literal(literal):
-            let data = try JSONEncoder().encode(literal)
-            guard let string = String(data: data, encoding: .utf8) else {
-                let message = "Failed to decode literal data for: '\(literal)'"
-                throw CLPrintError.literalConversionFailed(.init(message))
+            Swift.print("Encoding-decoding literal '\(literal)'")
+            do {
+
+                let data = try JSONEncoder().encode(literal)
+                guard let string = String(data: data, encoding: .utf8) else {
+                    let message = "Failed to decode literal data for: '\(literal)'"
+                    throw CLPrintError.literalConversionFailed(.init(message))
+                }
+                return string
+            } catch {
+                throw CLPrintError.literalConversionFailed(.init("Literal encoding failed '\(literal)'"))
             }
-            return string
-            
+
         case let .number(number):
             return number
             

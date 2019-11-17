@@ -193,6 +193,7 @@ internal struct CLTokenizer {
             switch (char, escaped) {
             case ("\"", false):
 
+                Swift.print("Decoding-encoding literal '\(literal)'")
                 guard let literalData = literal.data(using: .utf8) else {
                     throw CLReadError.literalConversionFailed(.init(literal))
                 }
