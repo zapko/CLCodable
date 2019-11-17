@@ -44,7 +44,7 @@ public extension CLToken {
         case let .literal(literal):
 
             let data: Data
-            do { data = try JSONEncoder().encode(literal) }
+            do { data = try JSONEncoder().encode([literal]) }
             catch {
                 let message = """
                               "Literal encoding failed '\(literal)' with error: \(error)"
@@ -52,12 +52,12 @@ public extension CLToken {
                 throw CLPrintError.literalConversionFailed(.init(message))
             }
 
-            guard let string = String(data: data, encoding: .utf8) else {
+            guard let string = String(data: data, encoding: .utf8)?.dropFirst().dropLast() else {
                 let message = "Failed to decode literal data for: '\(literal)', data: '\(data)'"
                 throw CLPrintError.literalConversionFailed(.init(message))
             }
 
-            return string
+            return String(string)
 
         case let .number(number):
             return number
