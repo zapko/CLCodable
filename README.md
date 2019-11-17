@@ -1,6 +1,7 @@
 # CLCodable
 Codable protocol for Common Lisp structures
 
+![](https://github.com/zapko/CLCodable/workflows/Swift/badge.svg)
 [![Build Status](https://travis-ci.org/zapko/CLCodable.svg?branch=develop)](https://travis-ci.org/zapko/CLCodable)
 [![codecov](https://codecov.io/gh/zapko/CLCodable/branch/develop/graph/badge.svg)](https://codecov.io/gh/zapko/CLCodable)
 
