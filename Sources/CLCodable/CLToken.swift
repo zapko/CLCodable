@@ -25,8 +25,6 @@ internal struct CLTokenizer {
     private var iterator: String.UnicodeScalarView.Iterator
     private var cachedScalar: UnicodeScalar?
     
-    private let decoder = JSONDecoder()
-
 
     // MARK: - Initializer
     
@@ -193,10 +191,28 @@ internal struct CLTokenizer {
             switch (char, escaped) {
             case ("\"", false):
                 guard let literalData = literal.data(using: .utf8) else {
-                    throw CLReadError.literalConversionFailed(.init(literal))
+                    let message = "String to data conversion failed: '\(literal)'"
+                    throw CLReadError.literalConversionFailed(.init(message))
                 }
 
-                return .literal(try decoder.decode(String.self, from: literalData))
+                let jsonObject: Any
+                do {
+                    jsonObject = try JSONSerialization.jsonObject(
+                        with: literalData,
+                        options: .allowFragments
+                    )
+
+                } catch {
+                    let message = "JSON deserialization of:'\(literalData)' failed: '\(error)'"
+                    throw CLReadError.literalConversionFailed(.init(message))
+                }
+
+                guard let string = jsonObject as? String else {
+                    let message = "Root JSON object is not String in: '\(literal)'"
+                    throw CLReadError.literalConversionFailed(.init(message))
+                }
+
+                return .literal(string)
 
             case ("\\", false):
                 escaped = true

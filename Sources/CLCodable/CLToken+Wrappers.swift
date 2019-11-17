@@ -44,15 +44,19 @@ public extension CLToken {
         case let .literal(literal):
 
             let data: Data
-            do { data = try JSONEncoder().encode([literal]) }
-            catch {
+            do {
+                data = try JSONSerialization.data(
+                    withJSONObject: literal,
+                    options: .fragmentsAllowed
+                )
+            } catch {
                 let message = """
                               "Literal encoding failed '\(literal)' with error: \(error)"
                               """
                 throw CLPrintError.literalConversionFailed(.init(message))
             }
 
-            guard let string = String(data: data, encoding: .utf8)?.dropFirst().dropLast() else {
+            guard let string = String(data: data, encoding: .utf8) else {
                 let message = "Failed to decode literal data for: '\(literal)', data: '\(data)'"
                 throw CLPrintError.literalConversionFailed(.init(message))
             }
