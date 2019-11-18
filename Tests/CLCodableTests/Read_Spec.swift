@@ -184,12 +184,4 @@ class Read_Spec: XCTestCase {
         XCTAssertEqual(people.last?.name, "Cop")
         XCTAssertEqual(people.last?.age, 33)
     }
-
-    // TODO: test transformation from kebab to camel cases for property names
-    // TODO: test upper cased format of CL structures
-
-    static var allTests = [
-        ("test_Reading_simple_structure", test_Reading_simple_structure),
-        ("test_Reading_nested_structure", test_Reading_nested_structure)
-    ]
 }

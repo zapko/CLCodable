@@ -3,5 +3,6 @@ import XCTest
 import CLCodableTests
 
 var tests = [XCTestCaseEntry]()
-tests += CLCodableTests.allTests()
+tests += CLCodableTests.__allTests()
+
 XCTMain(tests)
