@@ -33,35 +33,39 @@ struct Foo: CLDecodable {
 }
 
 
-func parseData() -> Foo? {
+func parseResponse() -> Foo? {
 
-    let data = "#s(foo :bar 24 :baz \"Hello, World!\")"
+    let data = "#S(FOO :BAR 24 :BAZ \"Hello, World!\")"
 
-    do {
-        return try readStruct(clView: data) as Foo
-    } catch {
-        print("Error: \(error)")
-        return nil
-    }
+    return try? clRead(data)
 }
 
 ```
 
 ## What it already can
-- Read Lisp structures into Swift structures
-- Print Swift structures back into Lisp structures
-- Transform kebab-case into camelCase and back (in a simplified way)
+- Read Lisp structures and lists into Swift structures and arrays
+- Print Swift structures and arrays back into Lisp structures and lists
+- Transform kebab-case into camelCase and back (for straightforward cases)
 
 ## What it can't yet
 - Handle package names
 - Autogenerate decodable/encodable methods
 
 ## Distribution
-
-Library is distributed through Swift Package Manager
+Using Swift Package Manager
 
 ```Swift
 package.dependencies.append(
     .package(url: "https://github.com/zapko/CLCodable", from: "0.8.1")
 )
 ```
+
+## Specs
+Can be found in tests:
+- [Read](https://github.com/zapko/CLCodable/blob/develop/Tests/CLCodableTests/Read_Spec.swift)
+- [Print](https://github.com/zapko/CLCodable/blob/develop/Tests/CLCodableTests/Print_Spec.swift)
+- [Names conversions](https://github.com/zapko/CLCodable/blob/develop/Tests/CLCodableTests/NameStyling_Spec.swift)
+
+## Manual conformances to CLDecodable/CLEncodable
+Can be found in [Samples](https://github.com/zapko/CLCodable/blob/develop/Tests/CLCodableTests/SampleStructures.swift).
+The plan is to autogenerate them the same way Swift is doing it for Decodable/Encodable.
