@@ -121,7 +121,10 @@ internal struct CLTokenizer {
                 structName.unicodeScalars.append(char)
 
             case (":", true):
-                let fieldName = try readFieldName()
+                let fieldName = styleFromCLToSwift(
+                    name:            try readFieldName(),
+                    capitalizeFirst: false
+                )
 
                 guard slots[fieldName] == nil else {
                     let message = "Multiple values for field '\(fieldName)'"

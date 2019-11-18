@@ -9,6 +9,7 @@
 import XCTest
 @testable import CLCodable
 
+// FIXME: Rewrite assertions so that they don't imply key's order
 
 class Print_Spec: XCTestCase {
     

@@ -16,7 +16,17 @@ struct Foo: CLDecodable {
 
     // MARK: - CLDecodable
 
-    init(from slots: [String : CLToken]) throws {
+    init(clToken token: CLToken) throws {
+
+        guard case .structure(let structureName, let slots) = token else {
+            let message = "Expected structure root, got: '\(token)'"
+            throw CLReadError.wrongRoot(.init(message))
+        }
+
+        guard "\(type(of: self))" == structureName else {
+            let message = "Expected structure of type '\(type(of: self))', got: '\(token)'"
+            throw CLReadError.wrongRoot(.init(message))
+        }
 
         guard let bar = try slots["bar"]?.int() else {
             throw CLReadError.missingValue(.init("bar"))

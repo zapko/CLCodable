@@ -67,6 +67,14 @@ class Read_Spec: XCTestCase {
         XCTAssertEqual(person.age, 30)
     }
 
+    func test_Reading_simple_structure_styled_in_CL() throws {
+
+        let person: Person = try clRead("#S(PERSON :AGE 30 :NAME \"Bob\")")
+
+        XCTAssertEqual(person.name, "Bob")
+        XCTAssertEqual(person.age, 30)
+    }
+
     func test_Reading_simple_structure_ignores_additional_spaces_and_newlines() throws {
 
         let person: Person = try clRead(
@@ -81,7 +89,7 @@ class Read_Spec: XCTestCase {
         XCTAssertEqual(person.age, 30)
     }
 
-    func test_Reading_simple_structure_with_duplicate_values_throws() {
+    func test_Reading_simple_structure_with_duplicate_keys_throws() {
 
         let data = "#s(person :age 30 :name \"Bob\" :age 23)"
 

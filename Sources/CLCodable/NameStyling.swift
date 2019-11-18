@@ -5,11 +5,17 @@
 import Foundation
 
 /// Simplified kebab-case to camelCase conversion
-func styleFromCLToSwift(name: String) -> String {
-    name
-        .components(separatedBy: "-")
-        .map { $0.capitalized }
-        .joined()
+func styleFromCLToSwift(name: String, capitalizeFirst: Bool = true) -> String {
+
+    let words = name.components(separatedBy: "-")
+
+    let head = (words.first ?? "")
+    let tail = words.dropFirst()
+                    .map { $0.capitalized }
+
+    let processedHead = capitalizeFirst ? head.capitalized : head.lowercased()
+
+    return processedHead + tail.joined()
 }
 
 /// Simplified camelCase to kebab-case conversion

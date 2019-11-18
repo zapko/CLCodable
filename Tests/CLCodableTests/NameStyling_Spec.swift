@@ -14,6 +14,11 @@ class NameStyling_Spec: XCTestCase {
             styleFromCLToSwift(name: "SIMPLE-STRUCTURE"),
             "SimpleStructure"
         )
+
+        XCTAssertEqual(
+            styleFromCLToSwift(name: "SIMPLE-STRUCTURE", capitalizeFirst: false),
+            "simpleStructure"
+        )
     }
 
     func test_Printing_transforms_camel_case_to_kebab_case() {

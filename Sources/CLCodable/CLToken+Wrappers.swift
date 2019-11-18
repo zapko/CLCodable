@@ -70,7 +70,7 @@ public extension CLToken {
             
             let printedSlots = try slots.map {
                 name, value in
-                ":\(name.uppercased()) \(try value.print())"
+                ":\(styleFromSwiftToCL(name: name)) \(try value.print())"
             }
             
             return "#S(" + ([styleFromSwiftToCL(name: name)] + printedSlots).joined(separator: " ") + ")"
